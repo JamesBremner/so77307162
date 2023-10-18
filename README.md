@@ -24,6 +24,7 @@ https://stackoverflow.com/q/77307162/16582
    - keep sum of vertex values
    - if abs(sum) < 0.5
       - add list of vertices visited in current search to list of groups
+      - mark vertices visited in current search
       - end current search
 ```
 
