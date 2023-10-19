@@ -5,13 +5,12 @@
 #include <vector>
 #include <algorithm>
 #include <queue>
+#include <filesystem>
 #include <wex.h>
+#include <window2file.h>
 #include "cStarterGUI.h"
 #include "GraphTheory.h" // https://github.com/JamesBremner/PathFinder
-
-class cMuni
-{
-};
+#include "viz.h"
 
 class cFinder
 {
@@ -65,13 +64,12 @@ void cFinder::bfs(int start)
     visited[start] = true;
     queue.push(start);
     sum = atof(g.rVertexAttr(start, 0).c_str());
-    int s = start;
 
     while (!queue.empty())
     {
 
-        // Dequeue a vertex from queue and print it
-        s = queue.front();
+        // Dequeue a vertex from queue 
+        int s = queue.front();
         queue.pop();
 
         for (auto adjacent : g.adjacentOut(s))
@@ -89,6 +87,7 @@ void cFinder::bfs(int start)
                             vMarked[kv] = true;
                         }
                     vm.push_back(adjacent);
+                    vMarked[adjacent] = true;
                     vMuni.push_back(vm);
                     return;
                 }
@@ -110,19 +109,6 @@ void cFinder::make()
 
 void cFinder::display()
 {
-    // auto& v = vMuni[0];
-    // for( auto& l : g.edgeList() )
-    // {
-    //     std::cout << g.userName(l.first)
-    //         << " " << g.userName(l.second );
-
-    //     if(
-    //         (std::find( v.begin(),v.end(),l.first) != v.end() )
-    //         &&
-    //         (std::find( v.begin(),v.end(),l.second) != v.end() ))
-    //         std::cout << " ***";
-    //     std::cout << "\n";
-    // }
 
     for (int v = 0; v < g.vertexCount(); v++)
     {
@@ -136,12 +122,38 @@ void cFinder::display()
     }
     for (auto &vm : vMuni)
     {
+        std::cout << "============\n";
         for (int v : vm)
         {
             std::cout << g.userName(v) << " " << g.rVertexAttr(v, 0) << "\n";
         }
-        std::cout << "============\n";
+
     }
+
+    raven::graph::cViz vz;
+    vz.setVertexColor(
+        [this](int v)
+        {
+        for (int k = 0; k < vMuni.size(); k++)
+        {
+            if (std::find(vMuni[k].begin(), vMuni[k].end(), v) != vMuni[k].end())
+            {
+                switch (k)
+                {
+                case 0:
+                    return ", color = red";
+                    break;
+                case 1:
+                    return ", color = blue";
+                    break;
+                default:
+                    return "";
+                }
+            }
+        } 
+        return "";
+        });
+    vz.viz(g);
 }
 
 class cGUI : public cStarterGUI
@@ -150,19 +162,26 @@ public:
     cGUI()
         : cStarterGUI(
               "Starter",
-              {50, 50, 1000, 500}),
-          lb(wex::maker::make<wex::label>(fm))
+              {50, 50, 1000, 500})
     {
-        muni.generateRandom(20, 20, 3);
+        muni.generateRandom(40, 60, 3);
         muni.make();
         muni.display();
+
+        fm.events().draw(
+            [this](PAINTSTRUCT &ps)
+            {
+                wex::window2file w2f;
+                auto path = std::filesystem::temp_directory_path();
+                auto sample = path / "sample.png";
+                w2f.draw(fm, sample.string());
+            });
 
         show();
         run();
     }
 
 private:
-    wex::label &lb;
     cFinder muni;
 };
 
