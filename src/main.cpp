@@ -6,8 +6,11 @@
 #include <algorithm>
 #include <queue>
 #include <filesystem>
-#include <wex.h>
+
+#include <wex.h>        // https://github.com/JamesBremner/windex
 #include <window2file.h>
+
+
 #include "cStarterGUI.h"
 #include "GraphTheory.h" // https://github.com/JamesBremner/PathFinder
 #include "viz.h"
