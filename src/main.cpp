@@ -11,6 +11,9 @@
 #include <window2file.h>
 
 #include "cStarterGUI.h"
+
+#include "cPolygon.h"
+
 #include "GraphTheory.h" // https://github.com/JamesBremner/PathFinder
 #include "viz.h"
 
