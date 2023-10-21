@@ -21,6 +21,7 @@ https://stackoverflow.com/q/77307162/16582
 - Loop S over vertices
 - Run a breadth first search starting from S
    - do not visit marked vertices
+   - do not visit vertices whose value would take the sum further away from zero
    - keep sum of vertex values
    - if abs(sum) < 0.5
       - add list of vertices visited in current search to list of groups
@@ -143,30 +144,39 @@ Groups generated
 
 ```
 ============
-8 1.000000
-9 -1.000000
-10 2.000000
-11 2.000000
+2 1.000000
 13 0.000000
-18 0.000000
-21 -3.000000
-23 0.000000
-24 1.000000
-26 0.000000
+15 2.000000
 28 -1.000000
+38 -2.000000
+28 -1.000000
+============
+3 1.000000
+4 2.000000
+17 -1.000000
+21 -3.000000
+25 1.000000
+26 0.000000
+17 -1.000000
+============
+5 1.000000
+6 -3.000000
 30 2.000000
-33 -3.000000
-35 1.000000
-39 -3.000000
-36 2.000000
+30 2.000000
 ============
 7 -3.000000
-17 -1.000000
-32 2.000000
-4 2.000000
+35 1.000000
+36 2.000000
+36 2.000000
+============
+11 2.000000
+23 0.000000
+24 1.000000
+33 -3.000000
+24 1.000000
 ```
 
-![image](https://github.com/JamesBremner/so77307162/assets/2046227/f9b9b06d-6d20-4cd9-9a9a-5421d79b0025)
+![image](https://github.com/JamesBremner/so77307162/assets/2046227/68fa929b-0e63-4314-8c1d-8f3254f8ed35)
 
    
 
