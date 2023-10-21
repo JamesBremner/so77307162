@@ -2,9 +2,11 @@
 
 I have thousands of localities on a map (vector layer). Each of them present a deficit or a surplus.
 
-I am trying to create groups for which the sum of these deficits and surplus is close to 0 (between -0,5 and 0,5). The municipalities must be contiguous, that is to say that A touches B which touches C without C needing to touch A. The algorithm should try to maximize the size of groups and minimize the amount of localities that belong to no group.
+Localities are two dimensional polygons. Two localities touch when they share an edge. Each locality has a value.
 
-The localities are polygons and two polygons touch if they share one or more edges.
+A group of localities must touch and have a sum of values close to zero (between -0,5 and 0,5).
+
+The algorithm should try to maximize the size of groups and minimize the amount of localities that belong to no group.
 
 ![image](https://github.com/JamesBremner/so77307162/assets/2046227/5fcea3ad-c923-49b1-8a11-cff984c4fd8f)
 
