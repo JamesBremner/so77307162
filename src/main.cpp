@@ -19,10 +19,9 @@
 
 class cFinder
 {
-    raven::graph::cGraph g;
-    std::vector<bool> vMarked;
-    std::vector<std::vector<int>> vMuni;
-    int sum;
+    raven::graph::cGraph g;                     // The links between touching localities
+    std::vector<bool> vMarked;                  // The localities that have been assigned to groups
+    std::vector<std::vector<int>> vGroup;       // Groups of localities
 
     void bfs(int start);
 
@@ -73,7 +72,7 @@ void cFinder::bfs(int start)
     // Mark the current node as visited and enqueue it
     visited[start] = true;
     queue.push(start);
-    sum = atof(g.rVertexAttr(start, 0).c_str());
+    int sum = atof(g.rVertexAttr(start, 0).c_str());
 
     while (!queue.empty())
     {
@@ -114,7 +113,7 @@ void cFinder::bfs(int start)
                         vMarked[kv] = true;
                     }
                 vm.push_back(adj);
-                vMuni.push_back(vm);
+                vGroup.push_back(vm);
 
                 // return to start a new search somewhere else
                 return;
@@ -160,7 +159,7 @@ void cFinder::display()
                   << " " << g.userName(l.second)
                   << "\n";
     }
-    for (auto &vm : vMuni)
+    for (auto &vm : vGroup)
     {
         std::cout << "============\n";
         for (int v : vm)
@@ -175,9 +174,9 @@ void cFinder::display()
     vz.setVertexColor(
         [this,&vColor](int v)
         {
-            for (int k = 0; k < vMuni.size(); k++)
+            for (int k = 0; k < vGroup.size(); k++)
             {
-                if (std::find(vMuni[k].begin(), vMuni[k].end(), v) != vMuni[k].end())
+                if (std::find(vGroup[k].begin(), vGroup[k].end(), v) != vGroup[k].end())
                 {
                     if( k < vColor.size() )
                         return std::string(", color = ") + vColor[k];
