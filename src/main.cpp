@@ -7,9 +7,8 @@
 #include <queue>
 #include <filesystem>
 
-#include <wex.h>        // https://github.com/JamesBremner/windex
+#include <wex.h> // https://github.com/JamesBremner/windex
 #include <window2file.h>
-
 
 #include "cStarterGUI.h"
 #include "GraphTheory.h" // https://github.com/JamesBremner/PathFinder
@@ -29,7 +28,8 @@ public:
     void generateRandom(int range, int width, int height);
     void generate1();
 
-    void make();
+    /// @brief Assign localities to groups
+    void assign();
 
     void display();
 };
@@ -56,6 +56,10 @@ void cFinder::generate1()
 
 void cFinder::bfs(int start)
 {
+    // check start already assigned to a group
+    if( vMarked[start])
+        return;
+
     // Mark all the vertices as not visited
     std::vector<bool> visited;
     visited.resize(g.vertexCount(), false);
@@ -70,43 +74,73 @@ void cFinder::bfs(int start)
 
     while (!queue.empty())
     {
-
-        // Dequeue a vertex from queue 
+        // Dequeue a vertex from queue
         int s = queue.front();
         queue.pop();
 
-        for (auto adjacent : g.adjacentOut(s))
+        // loop over adjacent vertices ( touching localities )
+        bool fadj = false;
+        for (int adj : g.adjacentOut(s))
         {
-            if ((!visited[adjacent]) && (!vMarked[adjacent]))
+            // ignore localities assigned to previous groups
+            if (vMarked[adj])
+                continue;
+
+            // ignore localities already visited in this search
+            if (visited[adj])
+                continue;
+
+            double val = atof(g.rVertexAttr(adj, 0).c_str());
+
+            // ignore localities that take sum further away from zero
+            if (sum * val > 0)
+                continue;
+
+            // add adjacent locality to potential group
+            visited[adj] = true;
+            
+            // check for acceptable group
+            if (abs(sum + val) < 0.5)
             {
-                sum += atof(g.rVertexAttr(adjacent, 0).c_str());
-                if (abs(sum) < 0.5)
-                {
-                    std::vector<int> vm;
-                    for (int kv = 0; kv < g.vertexCount(); kv++)
-                        if (visited[kv])
-                        {
-                            vm.push_back(kv);
-                            vMarked[kv] = true;
-                        }
-                    vm.push_back(adjacent);
-                    vMarked[adjacent] = true;
-                    vMuni.push_back(vm);
-                    return;
-                }
-                visited[adjacent] = true;
-                queue.push(adjacent);
+                // add this search to the groups
+                std::vector<int> vm;
+                for (int kv = 0; kv < g.vertexCount(); kv++)
+                    if (visited[kv])
+                    {
+                        vm.push_back(kv);
+                        vMarked[kv] = true;
+                    }
+                vm.push_back(adj);
+                vMuni.push_back(vm);
+
+                // return to start a new search somewhere else
+                return;
             }
+
+            // update ongoing breadth first search
+            sum += val;
+            queue.push(adj);
+            fadj = true;
+        }
+
+        // check potential gropup was added to
+        if ( ! fadj ) {
+            
+            /* All adjacent localities
+                were not good candidates for the potential group
+                abandom search to start again somewhere else
+            */
+            return;
         }
     }
 }
 
-void cFinder::make()
+void cFinder::assign()
 {
     vMarked.resize(g.vertexCount(), false);
-    for (int k = 0; k < 5; k++)
+    for (int k = 0; k < g.vertexCount(); k++)
     {
-        bfs(rand() % g.vertexCount());
+        bfs(k);
     }
 }
 
@@ -130,31 +164,25 @@ void cFinder::display()
         {
             std::cout << g.userName(v) << " " << g.rVertexAttr(v, 0) << "\n";
         }
-
     }
 
+    std::vector<std::string> vColor {
+        "red","blue","green","aquamarine2","chocolate2"    };
     raven::graph::cViz vz;
     vz.setVertexColor(
-        [this](int v)
+        [this,&vColor](int v)
         {
-        for (int k = 0; k < vMuni.size(); k++)
-        {
-            if (std::find(vMuni[k].begin(), vMuni[k].end(), v) != vMuni[k].end())
+            for (int k = 0; k < vMuni.size(); k++)
             {
-                switch (k)
+                if (std::find(vMuni[k].begin(), vMuni[k].end(), v) != vMuni[k].end())
                 {
-                case 0:
-                    return ", color = red";
-                    break;
-                case 1:
-                    return ", color = blue";
-                    break;
-                default:
-                    return "";
+                    if( k < vColor.size() )
+                        return std::string(", color = ") + vColor[k];
+                    else
+                        return std::string("");
                 }
             }
-        } 
-        return "";
+            return std::string("");
         });
     vz.viz(g);
 }
@@ -168,7 +196,7 @@ public:
               {50, 50, 1000, 500})
     {
         muni.generateRandom(40, 60, 3);
-        muni.make();
+        muni.assign();
         muni.display();
 
         fm.events().draw(
