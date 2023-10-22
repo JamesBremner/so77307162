@@ -31,6 +31,16 @@ https://stackoverflow.com/q/77307162/16582
       - end current search
 ```
 
+# Application
+
+To view the locality indices assigned to each group, select menu item `View | groups, text`
+
+![image](https://github.com/JamesBremner/so77307162/assets/2046227/3839ed4d-d166-410c-bfa1-0c895e501b2f)
+
+To view localities in layout image by GraphViz, select menu item `View | groups, layout`
+
+![image](https://github.com/JamesBremner/so77307162/assets/2046227/4d4e0881-43df-4b21-9b45-f668bec78a61)
+
 # Sample Input
 
 Randomly generated
