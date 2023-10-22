@@ -1,3 +1,10 @@
+#include <string>
+
+#include <wex.h> // https://github.com/JamesBremner/windex
+#include <window2file.h>
+
+#include "cGrouper.h"
+
 class cStarterGUI
 {
 public:
@@ -60,4 +67,52 @@ public:
 
 protected:
     wex::gui &fm;
+};
+
+
+class cGUI : public cStarterGUI
+{
+public:
+    cGUI()
+        : cStarterGUI(
+              "Starter",
+              {50, 50, 1000, 500}),
+        pldisplay(wex::maker::make<wex::panel>(fm))
+    {
+        muni.generateRandom(40, 60, 3);
+        //muni.readfile("../dat/test1/data.csv");
+        muni.assign();
+        muni.display();
+
+        constructMenu();
+
+        pldisplay.move(0,0,1000,500);
+        myDisplay = eDisplay::text;
+
+        fm.events().draw(
+            [this](PAINTSTRUCT &ps)
+            {
+                draw();
+            });
+
+        show();
+        run();
+    }
+
+private:
+    cGrouper muni;
+
+    enum class eDisplay
+    {
+        input,
+        text,
+        layout,
+    };
+
+    eDisplay myDisplay;
+
+    wex::panel& pldisplay;
+
+    void constructMenu();
+    void draw();
 };

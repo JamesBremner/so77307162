@@ -1,3 +1,5 @@
+#pragma once
+#include <vector>
 #include "cxy.h"        // https://github.com/JamesBremner/raven-set
 
 class cPolygon
@@ -6,6 +8,11 @@ class cPolygon
 
     /////////////////////////////
 public:
+    cPolygon( const std::vector<double>& vd)
+    {
+        for( int k = 0; k < vd.size(); k++ )
+            myVertices.emplace_back( vd[k],vd[k+1]);
+    }
     bool touching(const cPolygon &other)
     {
         for (int p1v1 = 0; p1v1 < myVertices.size() - 1; p1v1++)

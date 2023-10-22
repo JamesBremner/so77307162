@@ -4,39 +4,20 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include <queue>
-#include <filesystem>
+
+
 
 #include <wex.h> // https://github.com/JamesBremner/windex
 #include <window2file.h>
 
-#include "cStarterGUI.h"
+#include "cGraph.h"
+#include "viz.h" 
 
 #include "cPolygon.h"
+#include "cGrouper.h"
+#include "cGUI.h"
 
-#include "GraphTheory.h" // https://github.com/JamesBremner/PathFinder
-#include "viz.h"
-
-class cFinder
-{
-    raven::graph::cGraph g;                     // The links between touching localities
-    std::vector<bool> vMarked;                  // The localities that have been assigned to groups
-    std::vector<std::vector<int>> vGroup;       // Groups of localities
-
-    void bfs(int start);
-
-    //////////////////////////////////
-public:
-    void generateRandom(int range, int width, int height);
-    void generate1();
-
-    /// @brief Assign localities to groups
-    void assign();
-
-    void display();
-};
-
-void cFinder::generateRandom(int vertexNumber, int edgeNumber, int range)
+void cGrouper::generateRandom(int vertexNumber, int edgeNumber, int range)
 {
     for (int v = 0; v < vertexNumber; v++)
     {
@@ -52,92 +33,11 @@ void cFinder::generateRandom(int vertexNumber, int edgeNumber, int range)
             rand() % vertexNumber,
             rand() % vertexNumber);
 }
-void cFinder::generate1()
+void cGrouper::generate1()
 {
 }
 
-void cFinder::bfs(int start)
-{
-    // check start already assigned to a group
-    if( vMarked[start])
-        return;
-
-    // Mark all the vertices as not visited
-    std::vector<bool> visited;
-    visited.resize(g.vertexCount(), false);
-
-    // Create a queue for BFS
-    std::queue<int> queue;
-
-    // Mark the current node as visited and enqueue it
-    visited[start] = true;
-    queue.push(start);
-    int sum = atof(g.rVertexAttr(start, 0).c_str());
-
-    while (!queue.empty())
-    {
-        // Dequeue a vertex from queue
-        int s = queue.front();
-        queue.pop();
-
-        // loop over adjacent vertices ( touching localities )
-        bool fadj = false;
-        for (int adj : g.adjacentOut(s))
-        {
-            // ignore localities assigned to previous groups
-            if (vMarked[adj])
-                continue;
-
-            // ignore localities already visited in this search
-            if (visited[adj])
-                continue;
-
-            double val = atof(g.rVertexAttr(adj, 0).c_str());
-
-            // ignore localities that take sum further away from zero
-            if (sum * val > 0)
-                continue;
-
-            // add adjacent locality to potential group
-            visited[adj] = true;
-            
-            // check for acceptable group
-            if (abs(sum + val) < 0.5)
-            {
-                // add this search to the groups
-                std::vector<int> vm;
-                for (int kv = 0; kv < g.vertexCount(); kv++)
-                    if (visited[kv])
-                    {
-                        vm.push_back(kv);
-                        vMarked[kv] = true;
-                    }
-                vm.push_back(adj);
-                vGroup.push_back(vm);
-
-                // return to start a new search somewhere else
-                return;
-            }
-
-            // update ongoing breadth first search
-            sum += val;
-            queue.push(adj);
-            fadj = true;
-        }
-
-        // check potential gropup was added to
-        if ( ! fadj ) {
-            
-            /* All adjacent localities
-                were not good candidates for the potential group
-                abandom search to start again somewhere else
-            */
-            return;
-        }
-    }
-}
-
-void cFinder::assign()
+void cGrouper::assign()
 {
     vMarked.resize(g.vertexCount(), false);
     for (int k = 0; k < g.vertexCount(); k++)
@@ -146,7 +46,7 @@ void cFinder::assign()
     }
 }
 
-void cFinder::display()
+void cGrouper::display()
 {
 
     for (int v = 0; v < g.vertexCount(); v++)
@@ -188,35 +88,6 @@ void cFinder::display()
         });
     vz.viz(g);
 }
-
-class cGUI : public cStarterGUI
-{
-public:
-    cGUI()
-        : cStarterGUI(
-              "Starter",
-              {50, 50, 1000, 500})
-    {
-        muni.generateRandom(40, 60, 3);
-        muni.assign();
-        muni.display();
-
-        fm.events().draw(
-            [this](PAINTSTRUCT &ps)
-            {
-                wex::window2file w2f;
-                auto path = std::filesystem::temp_directory_path();
-                auto sample = path / "sample.png";
-                w2f.draw(fm, sample.string());
-            });
-
-        show();
-        run();
-    }
-
-private:
-    cFinder muni;
-};
 
 main()
 {
