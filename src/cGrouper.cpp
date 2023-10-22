@@ -48,18 +48,47 @@ void cGrouper::readfile2(const std::string &fname)
         throw std::runtime_error(
             "Cannot open " + fname);
 
+    g.clear();
+
     std::string line;
+    getline(ifs, line);
     while (getline(ifs, line))
     {
-        // std::cout << line << "\n";
+        //std::cout << line << "\n";
 
         // the file is first delimited by semicolons
-        std::vector<double> vtoken;
+        std::vector<std::string> vtoken;
         std::stringstream sst(line);
         std::string a;
         while (getline(sst, a, ';'))
-            vtoken.push_back(atof(a.c_str()));
+            vtoken.push_back(a);
+        
+        // std::cout << vtoken[0] << "\n";
+        // std::cout << vtoken[1] << "\n";
+        // std::cout << vtoken[2] << "\n================\n";
+
+
+        int vi = g.find(vtoken[0]);
+        if( vi < 0 )
+            vi = g.add(vtoken[0]);
+
+        // the decimal point is shown as a comma
+        int p = vtoken[2].find(",");
+        vtoken[2] = vtoken[2].substr(0,p) +
+            "." + vtoken[2].substr(p+1);
+        g.wVertexAttr(
+            vi,
+            {vtoken[2]});
+
+        // the adjacencies are space delimited
+        std::stringstream ssta(vtoken[1]);
+        while (getline(ssta, a, ' '))
+            g.add( vtoken[0], a );
+        
+        if( ! (g.vertexCount() % 1000 ) )
+            std::cout << "read " << g.vertexCount() << " localities\n";
     }
+    std::cout << "finished reading " << g.vertexCount() << " localities\n";
 }
 
 
@@ -105,7 +134,7 @@ void cGrouper::bfs(int start)
             if (sum * val > 0)
                 continue;
                 
-            std::cout << "add potential " << g.userName( adj ) <<" " << val <<" " << sum + val << "\n";
+            //std::cout << "add potential " << g.userName( adj ) <<" " << val <<" " << sum + val << "\n";
 
             // add adjacent locality to potential group
             visited[adj] = true;

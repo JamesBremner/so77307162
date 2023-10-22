@@ -75,12 +75,12 @@ class cGUI : public cStarterGUI
 public:
     cGUI()
         : cStarterGUI(
-              "Starter",
+              "Grouper",
               {50, 50, 1000, 500}),
         pldisplay(wex::maker::make<wex::panel>(fm))
     {
-        muni.generateRandom(40, 60, 3);
-        //muni.readfile("../dat/test1/data.csv");
+        //muni.generateRandom(40, 60, 3);
+        muni.readfile2("../dat/test1/adjacencies.txt");
         muni.assign();
         muni.display();
 

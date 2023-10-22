@@ -49,16 +49,16 @@ void cGrouper::assign()
 void cGrouper::display()
 {
 
-    for (int v = 0; v < g.vertexCount(); v++)
-    {
-        std::cout << g.userName(v) << " " << g.rVertexAttr(v, 0) << "\n";
-    }
-    for (auto &l : g.edgeList())
-    {
-        std::cout << g.userName(l.first)
-                  << " " << g.userName(l.second)
-                  << "\n";
-    }
+    // for (int v = 0; v < g.vertexCount(); v++)
+    // {
+    //     std::cout << g.userName(v) << " " << g.rVertexAttr(v, 0) << "\n";
+    // }
+    // for (auto &l : g.edgeList())
+    // {
+    //     std::cout << g.userName(l.first)
+    //               << " " << g.userName(l.second)
+    //               << "\n";
+    // }
     for (auto &vm : vGroup)
     {
         std::cout << "============\n";
