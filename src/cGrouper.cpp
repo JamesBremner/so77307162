@@ -1,6 +1,7 @@
 #include <fstream>
 #include <sstream>
 #include <queue>
+#include <cmath>
 
 #include "cGraph.h"
 #include "viz.h"
@@ -159,7 +160,7 @@ void cGrouper::bfs(int start)
             visited[adj] = true;
 
             // check for acceptable group
-            if (abs(sum + val) < 0.5)
+            if (std::fabs(sum + val) < 0.5)
             {
                 // add this search to the groups
                 std::vector<int> vm;
@@ -187,7 +188,7 @@ void cGrouper::bfs(int start)
 
             /* All adjacent localities
                 were not good candidates for the potential group
-                abandom search to start again somewhere else
+                abandon search to start again somewhere else
             */
             return;
         }
