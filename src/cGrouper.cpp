@@ -65,6 +65,12 @@ void cGrouper::readfileAdjancylist(const std::string &fname)
         std::string a;
         while (getline(sst, a, ';'))
             vtoken.push_back(a);
+
+        if( vtoken.size() != 4 ) {
+            std::cout << line << "\n";
+            throw std::runtime_error(
+                "Format error in adjancies file"            );
+        }
         
         // std::cout << vtoken[0] << "\n";
         // std::cout << vtoken[1] << "\n";
@@ -90,6 +96,8 @@ void cGrouper::readfileAdjancylist(const std::string &fname)
         
         if( ! (g.vertexCount() % 1000 ) )
             std::cout << "read " << g.vertexCount() << " localities\n";
+
+        vRegion.push_back(atoi(vtoken[3].c_str()));
     }
     std::cout << "finished reading " << g.vertexCount() << " localities\n";
 }
@@ -244,7 +252,7 @@ void cGrouper::display()
 }
 
 
-std::string cGrouper::text()
+std::string cGrouper::text(int region)
 {
     if( ! vGroup.size() )
         return "\n\n\n     Use menu item File | Adjacency List to select input file";
@@ -252,10 +260,12 @@ std::string cGrouper::text()
     std::stringstream ss;
     ss << "\n" << countAssigned() << " of " << g.vertexCount() 
         << " localities assigned\n\n";
-    ss << "Groups\n";
+    ss << "Groups in region "<< region << "\n";
     for (auto &vm : vGroup)
     {
-        ss << "============\n";
+        if( vRegion[vm[0]] != region )
+            continue;
+
         double sum = 0;
         for (int v : vm)
         {

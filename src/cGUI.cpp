@@ -3,6 +3,8 @@
 
 #include "cGUI.h"
 
+#include <inputbox.h>
+
 void cGUI::constructMenu()
 {
     wex::menubar mbar(fm);
@@ -23,16 +25,6 @@ void cGUI::constructMenu()
     mbar.append("File", file);
 
     wex::menu view(fm);
-    // view.append(
-    //     "Input",
-    //     [&](const std::string &title)
-    //     {
-    //         // std::ifstream ifs(thePirateIslands.myfname);
-    //         // std::stringstream buffer;
-    //         // buffer << ifs.rdbuf();
-    //         // results = buffer.str();
-    //         fm.update();
-    //     });
     view.append(
         "Groups, text",
         [&](const std::string &title)
@@ -47,6 +39,19 @@ void cGUI::constructMenu()
             myDisplay = eDisplay::layout;
             fm.update();
         });
+    view.append(
+        "Region",
+        [this](const std::string &title)
+        {
+            wex::inputbox ib;
+            ib.labelWidth(200);
+            ib.gridWidth(500);
+            ib.add("View groups in region",
+                   std::to_string(myRegionView));
+            ib.showModal();
+            myRegionView = atoi(ib.value("View groups in region").c_str());
+            fm.update();
+        });
     mbar.append("View", view);
 }
 void cGUI::draw()
@@ -55,7 +60,7 @@ void cGUI::draw()
     {
     case eDisplay::text:
         pldisplay.show();
-        pldisplay.text(muni.text());
+        pldisplay.text(muni.text(myRegionView));
         pldisplay.update();
         break;
 

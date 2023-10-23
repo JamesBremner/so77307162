@@ -77,11 +77,12 @@ public:
         : cStarterGUI(
               "Grouper",
               {50, 50, 1000, 500}),
-        pldisplay(wex::maker::make<wex::panel>(fm))
+        pldisplay(wex::maker::make<wex::panel>(fm)),
+        myRegionView( 84 )
     {
         constructMenu();
 
-        pldisplay.move(0,0,1000,500);
+        pldisplay.move(0,0,1000,1000);
         myDisplay = eDisplay::text;
 
         fm.events().draw(
@@ -107,6 +108,8 @@ private:
     eDisplay myDisplay;
 
     wex::panel& pldisplay;
+
+    int myRegionView;
 
     void constructMenu();
     void draw();
