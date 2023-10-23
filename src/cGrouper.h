@@ -22,8 +22,6 @@ class cGrouper
     //////////////////////////////////
 public:
     void generateRandom(int range, int width, int height);
-    void genPolygon1();
-    void generate1();
     void readfile( const std::string& fname );
     void readfileAdjancylist( const std::string& fname );
 
