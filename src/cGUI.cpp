@@ -15,7 +15,7 @@ void cGUI::constructMenu()
             wex::filebox fb(fm);
             auto fname = fb.open();
             fm.text("Grouper " + fname);
-            muni.readfile2(fname);
+            muni.readfileAdjancylist(fname);
             muni.assign();
             muni.display();
             fm.update();

@@ -37,14 +37,8 @@ void cGrouper::generate1()
 {
 }
 
-void cGrouper::assign()
-{
-    vMarked.resize(g.vertexCount(), false);
-    for (int k = 0; k < g.vertexCount(); k++)
-    {
-        bfs(k);
-    }
-}
+
+
 
 
 main()

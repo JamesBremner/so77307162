@@ -8,43 +8,43 @@
 #include "cPolygon.h"
 #include "cGrouper.h"
 
-void cGrouper::readfile(const std::string &fname)
-{
-    std::ifstream ifs(fname);
-    if (!ifs.is_open())
-        throw std::runtime_error(
-            "Cannot open " + fname);
+// void cGrouper::readfile(const std::string &fname)
+// {
+//     std::ifstream ifs(fname);
+//     if (!ifs.is_open())
+//         throw std::runtime_error(
+//             "Cannot open " + fname);
 
-    std::string line;
-    while (getline(ifs, line))
-    {
-        // std::cout << line << "\n";
+//     std::string line;
+//     while (getline(ifs, line))
+//     {
+//         // std::cout << line << "\n";
 
-        int p = line.find("MultiPolygon");
-        if (p == -1)
-            continue;
-        int q = line.find("\"", p + 15);
-        std::string mp = line.substr(p, q - 1);
-        std::string details = line.substr(q);
+//         int p = line.find("MultiPolygon");
+//         if (p == -1)
+//             continue;
+//         int q = line.find("\"", p + 15);
+//         std::string mp = line.substr(p, q - 1);
+//         std::string details = line.substr(q);
 
-        std::cout << mp.substr(16, 30) << "..." << mp.substr(mp.length() - 30) << "\n";
-        std::cout << details << "\n";
+//         std::cout << mp.substr(16, 30) << "..." << mp.substr(mp.length() - 30) << "\n";
+//         std::cout << details << "\n";
 
-        if (details.length() > 10)
-        {
-            std::vector<double> vd;
-            std::stringstream sst(line);
-            std::string a;
-            while (getline(sst, a, ','))
-                vd.push_back(atof(a.c_str()));
-            vPolygon.emplace_back(vd);
-        }
+//         if (details.length() > 10)
+//         {
+//             std::vector<double> vd;
+//             std::stringstream sst(line);
+//             std::string a;
+//             while (getline(sst, a, ','))
+//                 vd.push_back(atof(a.c_str()));
+//             vPolygon.emplace_back(vd);
+//         }
 
-        continue;
-    }
-}
+//         continue;
+//     }
+// }
 
-void cGrouper::readfile2(const std::string &fname)
+void cGrouper::readfileAdjancylist(const std::string &fname)
 {
     std::ifstream ifs(fname);
     if (!ifs.is_open())
@@ -177,6 +177,21 @@ void cGrouper::bfs(int start)
     }
 }
 
+void cGrouper::assign()
+{
+    vMarked.resize(g.vertexCount(), false);
+    for (int k = 0; k < g.vertexCount(); k++)
+    {
+        bfs(k);
+    }
+}
+
+int cGrouper::countAssigned()
+{
+    return std::count( 
+        vMarked.begin(),vMarked.end(),
+        true );
+}
 
 void cGrouper::display()
 {
@@ -233,8 +248,10 @@ std::string cGrouper::text()
 {
     if( ! vGroup.size() )
         return "\n\n\n     Use menu item File | Adjacency List to select input file";
-        
+
     std::stringstream ss;
+    ss << "\n" << countAssigned() << " of " << g.vertexCount() 
+        << " localities assigned\n\n";
     ss << "Groups\n";
     for (auto &vm : vGroup)
     {

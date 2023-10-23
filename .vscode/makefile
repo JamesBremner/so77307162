@@ -44,3 +44,5 @@ starter: $(OBJ_starter)
 clean:
 	del /q .vscode\\obj\\*.o
 
+rebuild: clean starter
+

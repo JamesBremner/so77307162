@@ -27,10 +27,12 @@ public:
     void genPolygon1();
     void generate1();
     void readfile( const std::string& fname );
-    void readfile2( const std::string& fname );
+    void readfileAdjancylist( const std::string& fname );
 
     /// @brief Assign localities to groups
     void assign();
+
+    int countAssigned();
 
     /// @brief generate layout image
     void display();
