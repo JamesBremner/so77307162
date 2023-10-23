@@ -11,7 +11,7 @@
 #include <window2file.h>
 
 #include "cGraph.h"
-#include "viz.h" 
+
 
 #include "cPolygon.h"
 #include "cGrouper.h"
@@ -46,48 +46,6 @@ void cGrouper::assign()
     }
 }
 
-void cGrouper::display()
-{
-
-    // for (int v = 0; v < g.vertexCount(); v++)
-    // {
-    //     std::cout << g.userName(v) << " " << g.rVertexAttr(v, 0) << "\n";
-    // }
-    // for (auto &l : g.edgeList())
-    // {
-    //     std::cout << g.userName(l.first)
-    //               << " " << g.userName(l.second)
-    //               << "\n";
-    // }
-    for (auto &vm : vGroup)
-    {
-        std::cout << "============\n";
-        for (int v : vm)
-        {
-            std::cout << g.userName(v) << " " << g.rVertexAttr(v, 0) << "\n";
-        }
-    }
-
-    std::vector<std::string> vColor {
-        "red","blue","green","aquamarine2","chocolate2"    };
-    raven::graph::cViz vz;
-    vz.setVertexColor(
-        [this,&vColor](int v)
-        {
-            for (int k = 0; k < vGroup.size(); k++)
-            {
-                if (std::find(vGroup[k].begin(), vGroup[k].end(), v) != vGroup[k].end())
-                {
-                    if( k < vColor.size() )
-                        return std::string(", color = ") + vColor[k];
-                    else
-                        return std::string("");
-                }
-            }
-            return std::string("");
-        });
-    vz.viz(g);
-}
 
 main()
 {
