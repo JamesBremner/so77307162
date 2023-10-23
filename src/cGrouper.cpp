@@ -137,7 +137,7 @@ void cGrouper::bfs(int start)
         queue.pop();
 
         // loop over adjacent vertices ( touching localities )
-        bool fadj = false;
+        bool searchOK = false;
         for (int adj : g.adjacentOut(s))
         {
             // ignore localities assigned to previous groups
@@ -158,32 +158,25 @@ void cGrouper::bfs(int start)
 
             // add adjacent locality to potential group
             visited[adj] = true;
+            sum += val;
 
             // check for acceptable group
-            if (std::fabs(sum + val) < 0.5)
+            if (std::fabs(sum) < 0.5)
             {
                 // add this search to the groups
-                std::vector<int> vm;
-                for (int kv = 0; kv < g.vertexCount(); kv++)
-                    if (visited[kv])
-                    {
-                        vm.push_back(kv);
-                        vMarked[kv] = true;
-                    }
-                vGroup.push_back(vm);
+                addSearch( visited );
 
                 // return to start a new search somewhere else
                 return;
             }
 
             // update ongoing breadth first search
-            sum += val;
             queue.push(adj);
-            fadj = true;
+            searchOK = true;
         }
 
-        // check potential gropup was added to
-        if (!fadj)
+        // check potential group was added to
+        if (!searchOK)
         {
 
             /* All adjacent localities
@@ -193,6 +186,18 @@ void cGrouper::bfs(int start)
             return;
         }
     }
+}
+
+void cGrouper::addSearch(const std::vector<bool> &visited)
+{
+    std::vector<int> vm;
+    for (int kv = 0; kv < g.vertexCount(); kv++)
+        if (visited[kv])
+        {
+            vm.push_back(kv);
+            vMarked[kv] = true;
+        }
+    vGroup.push_back(vm);
 }
 
 void cGrouper::assign()

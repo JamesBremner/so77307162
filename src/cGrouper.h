@@ -6,10 +6,6 @@
 
 #include "GraphTheory.h" // https://github.com/JamesBremner/PathFinder
 
-#include "cPolygon.h"
-
-
-
 
 /// @brief Assign localities ( municipalities ) to groups
 class cGrouper
@@ -21,6 +17,7 @@ class cGrouper
     std::vector<std::vector<int>> vGroup;       // Groups of localities
 
     void bfs(int start);
+    void addSearch( const std::vector<bool>& visited );
 
     //////////////////////////////////
 public:
