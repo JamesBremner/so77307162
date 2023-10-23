@@ -3,7 +3,7 @@
 #include <queue>
 
 #include "cGraph.h"
-#include "viz.h" 
+#include "viz.h"
 
 #include "cPolygon.h"
 #include "cGrouper.h"
@@ -57,7 +57,7 @@ void cGrouper::readfileAdjancylist(const std::string &fname)
     getline(ifs, line);
     while (getline(ifs, line))
     {
-        //std::cout << line << "\n";
+        // std::cout << line << "\n";
 
         // the file is first delimited by semicolons
         std::vector<std::string> vtoken;
@@ -66,25 +66,34 @@ void cGrouper::readfileAdjancylist(const std::string &fname)
         while (getline(sst, a, ';'))
             vtoken.push_back(a);
 
-        if( vtoken.size() != 4 ) {
+        if (vtoken.size() != 4)
+        {
             std::cout << line << "\n";
             throw std::runtime_error(
-                "Format error in adjancies file"            );
+                "Format error in adjancies file");
         }
-        
+
         // std::cout << vtoken[0] << "\n";
         // std::cout << vtoken[1] << "\n";
         // std::cout << vtoken[2] << "\n================\n";
 
+        // check if locality in region to be included
+        if (vRegionInclude.size())
+        {
+            if (std::find(
+                    vRegionInclude.begin(), vRegionInclude.end(),
+                    atoi(vtoken[3].c_str())) == vRegionInclude.end())
+                continue;
+        }
 
         int vi = g.find(vtoken[0]);
-        if( vi < 0 )
+        if (vi < 0)
             vi = g.add(vtoken[0]);
 
         // the decimal point is shown as a comma
         int p = vtoken[2].find(",");
-        vtoken[2] = vtoken[2].substr(0,p) +
-            "." + vtoken[2].substr(p+1);
+        vtoken[2] = vtoken[2].substr(0, p) +
+                    "." + vtoken[2].substr(p + 1);
         g.wVertexAttr(
             vi,
             {vtoken[2]});
@@ -92,9 +101,9 @@ void cGrouper::readfileAdjancylist(const std::string &fname)
         // the adjacencies are space delimited
         std::stringstream ssta(vtoken[1]);
         while (getline(ssta, a, ' '))
-            g.add( vtoken[0], a );
-        
-        if( ! (g.vertexCount() % 1000 ) )
+            g.add(vtoken[0], a);
+
+        if (!(g.vertexCount() % 1000))
             std::cout << "read " << g.vertexCount() << " localities\n";
 
         vRegion.push_back(atoi(vtoken[3].c_str()));
@@ -102,11 +111,10 @@ void cGrouper::readfileAdjancylist(const std::string &fname)
     std::cout << "finished reading " << g.vertexCount() << " localities\n";
 }
 
-
 void cGrouper::bfs(int start)
 {
     // check start already assigned to a group
-    if( vMarked[start])
+    if (vMarked[start])
         return;
 
     // Mark all the vertices as not visited
@@ -144,12 +152,12 @@ void cGrouper::bfs(int start)
             // ignore localities that take sum further away from zero
             if (sum * val > 0)
                 continue;
-                
-            //std::cout << "add potential " << g.userName( adj ) <<" " << val <<" " << sum + val << "\n";
+
+            // std::cout << "add potential " << g.userName( adj ) <<" " << val <<" " << sum + val << "\n";
 
             // add adjacent locality to potential group
             visited[adj] = true;
-            
+
             // check for acceptable group
             if (abs(sum + val) < 0.5)
             {
@@ -174,8 +182,9 @@ void cGrouper::bfs(int start)
         }
 
         // check potential gropup was added to
-        if ( ! fadj ) {
-            
+        if (!fadj)
+        {
+
             /* All adjacent localities
                 were not good candidates for the potential group
                 abandom search to start again somewhere else
@@ -196,9 +205,9 @@ void cGrouper::assign()
 
 int cGrouper::countAssigned()
 {
-    return std::count( 
-        vMarked.begin(),vMarked.end(),
-        true );
+    return std::count(
+        vMarked.begin(), vMarked.end(),
+        true);
 }
 
 void cGrouper::display()
@@ -217,30 +226,30 @@ void cGrouper::display()
     for (auto &vm : vGroup)
     {
         std::cout << "============\n";
-         double sum = 0;
+        double sum = 0;
         for (int v : vm)
         {
-            std::cout << g.userName(v) 
-                << " " << g.rVertexAttr(v, 0) << " ";
-                sum += atof( g.rVertexAttr(v, 0).c_str() );
+            std::cout << g.userName(v)
+                      << " " << g.rVertexAttr(v, 0) << " ";
+            sum += atof(g.rVertexAttr(v, 0).c_str());
         }
         std::cout << "sum " << sum << "\n";
     }
 
-    if( g.vertexCount() > 100 )
+    if (g.vertexCount() > 100)
         return;
 
-    std::vector<std::string> vColor {
-        "red","blue","green","aquamarine2","chocolate2"    };
+    std::vector<std::string> vColor{
+        "red", "blue", "green", "aquamarine2", "chocolate2"};
     raven::graph::cViz vz;
     vz.setVertexColor(
-        [this,&vColor](int v)
+        [this, &vColor](int v)
         {
             for (int k = 0; k < vGroup.size(); k++)
             {
                 if (std::find(vGroup[k].begin(), vGroup[k].end(), v) != vGroup[k].end())
                 {
-                    if( k < vColor.size() )
+                    if (k < vColor.size())
                         return std::string(", color = ") + vColor[k];
                     else
                         return std::string("");
@@ -251,28 +260,44 @@ void cGrouper::display()
     vz.viz(g);
 }
 
-
 std::string cGrouper::text(int region)
 {
-    if( ! vGroup.size() )
+    if (!vGroup.size())
         return "\n\n\n     Use menu item File | Adjacency List to select input file";
 
     std::stringstream ss;
-    ss << "\n" << countAssigned() << " of " << g.vertexCount() 
-        << " localities assigned\n\n";
-    ss << "Groups in region "<< region << "\n";
+    ss << "\n"
+       << countAssigned() << " of " << g.vertexCount()
+       << " localities assigned\n\n";
+    ss << "Groups in region " << region << "\n";
     for (auto &vm : vGroup)
     {
-        if( vRegion[vm[0]] != region )
+        if (vRegion[vm[0]] != region)
             continue;
 
         double sum = 0;
         for (int v : vm)
         {
             ss << g.userName(v) << " ";
-            sum += atof( g.rVertexAttr(v, 0).c_str() );
+            sum += atof(g.rVertexAttr(v, 0).c_str());
         }
         ss << " sum: " << sum << "\n";
     }
     return ss.str();
+}
+
+std::string cGrouper::regionsIncluded() const
+{
+    std::stringstream ss;
+    for (int r : vRegionInclude)
+        ss << r << " ";
+    return ss.str();
+}
+void cGrouper::regionsIncluded(const std::string &s)
+{
+    vRegionInclude.clear();
+    std::stringstream sst(s);
+    std::string a;
+    while (getline(sst, a, ' '))
+        vRegionInclude.push_back(atoi(a.c_str()));
 }

@@ -14,9 +14,9 @@
 /// @brief Assign localities ( municipalities ) to groups
 class cGrouper
 {
-    //std::vector<cPolygon> vPolygon;
     raven::graph::cGraph g;                     // The links between touching localities
-    std::vector<int> vRegion;
+    std::vector<int> vRegion;                   // Regions of the localities
+    std::vector<int> vRegionInclude;            // Regions to be grouped, empty for all
     std::vector<bool> vMarked;                  // The localities that have been assigned to groups
     std::vector<std::vector<int>> vGroup;       // Groups of localities
 
@@ -39,4 +39,7 @@ public:
     void display();
 
     std::string text( int region );
+
+    std::string regionsIncluded() const;
+    void regionsIncluded( const std::string& s );
 };

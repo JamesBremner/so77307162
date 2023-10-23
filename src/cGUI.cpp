@@ -23,6 +23,25 @@ void cGUI::constructMenu()
             fm.update();
         });
     mbar.append("File", file);
+    file.append(
+        "Regions to group",
+        [&](const std::string &title)
+        {
+            wex::inputbox ib;
+            ib.labelWidth(200);
+            ib.gridWidth(500);
+            ib.add("Regions ( Space separated list e.g. \"84 32\")",
+                   muni.regionsIncluded());
+            ib.showModal();
+            muni.regionsIncluded( ib.value("Regions ( Space separated list e.g. \"84 32\")"));
+            wex::filebox fb(fm);
+            auto fname = fb.open();
+            fm.text("Grouper " + fname);
+            muni.readfileAdjancylist(fname);
+            muni.assign();
+            muni.display();
+            fm.update();
+        });
 
     wex::menu view(fm);
     view.append(
