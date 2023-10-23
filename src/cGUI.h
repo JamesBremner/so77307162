@@ -79,11 +79,6 @@ public:
               {50, 50, 1000, 500}),
         pldisplay(wex::maker::make<wex::panel>(fm))
     {
-        //muni.generateRandom(40, 60, 3);
-        muni.readfile2("../dat/test1/adjacencies.txt");
-        muni.assign();
-        muni.display();
-
         constructMenu();
 
         pldisplay.move(0,0,1000,500);

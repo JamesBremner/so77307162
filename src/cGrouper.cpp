@@ -204,6 +204,9 @@ void cGrouper::display()
         std::cout << "sum " << sum << "\n";
     }
 
+    if( g.vertexCount() > 100 )
+        return;
+
     std::vector<std::string> vColor {
         "red","blue","green","aquamarine2","chocolate2"    };
     raven::graph::cViz vz;
@@ -228,6 +231,9 @@ void cGrouper::display()
 
 std::string cGrouper::text()
 {
+    if( ! vGroup.size() )
+        return "\n\n\n     Use menu item File | Adjacency List to select input file";
+        
     std::stringstream ss;
     ss << "Groups\n";
     for (auto &vm : vGroup)

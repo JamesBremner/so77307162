@@ -7,20 +7,20 @@ void cGUI::constructMenu()
 {
     wex::menubar mbar(fm);
 
-    // wex::menu file(fm);
-    // file.append(
-    //     "calculate",
-    //     [&](const std::string &title)
-    //     {
-    //         wex::filebox fb(fm);
-    //         auto fname = fb.open();
-    //         fm.text(fname);
-    //         thePirateIslands.readfile(fname);
-    //         thePirateIslands.navigate();
-    //         results = thePirateIslands.textResults();
-    //         fm.update();
-    //     });
-    // mbar.append("File", file);
+    wex::menu file(fm);
+    file.append(
+        "Adjacency List",
+        [&](const std::string &title)
+        {
+            wex::filebox fb(fm);
+            auto fname = fb.open();
+            fm.text("Grouper " + fname);
+            muni.readfile2(fname);
+            muni.assign();
+            muni.display();
+            fm.update();
+        });
+    mbar.append("File", file);
 
     wex::menu view(fm);
     // view.append(
