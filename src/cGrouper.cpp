@@ -6,44 +6,47 @@
 #include "cGraph.h"
 #include "viz.h"
 
-#include "cPolygon.h"
 #include "cGrouper.h"
 
-// void cGrouper::readfile(const std::string &fname)
-// {
-//     std::ifstream ifs(fname);
-//     if (!ifs.is_open())
-//         throw std::runtime_error(
-//             "Cannot open " + fname);
+cGrouper::cGrouper()
+    : myMinSum(-0.5),
+      myMaxSum(0.5),
+      myMinSize(0)
+{
+}
 
-//     std::string line;
-//     while (getline(ifs, line))
-//     {
-//         // std::cout << line << "\n";
+std::string cGrouper::regionsIncluded() const
+{
+    std::stringstream ss;
+    for (int r : vRegionInclude)
+        ss << r << " ";
+    return ss.str();
+}
+double cGrouper::minSum() const
+{
+    return myMinSum;
+}
+double cGrouper::maxSum() const
+{
+    return myMaxSum;
+}
+int cGrouper::minSize() const
+{
+    return myMinSize;
+}
 
-//         int p = line.find("MultiPolygon");
-//         if (p == -1)
-//             continue;
-//         int q = line.find("\"", p + 15);
-//         std::string mp = line.substr(p, q - 1);
-//         std::string details = line.substr(q);
-
-//         std::cout << mp.substr(16, 30) << "..." << mp.substr(mp.length() - 30) << "\n";
-//         std::cout << details << "\n";
-
-//         if (details.length() > 10)
-//         {
-//             std::vector<double> vd;
-//             std::stringstream sst(line);
-//             std::string a;
-//             while (getline(sst, a, ','))
-//                 vd.push_back(atof(a.c_str()));
-//             vPolygon.emplace_back(vd);
-//         }
-
-//         continue;
-//     }
-// }
+void cGrouper::minSum(double v)
+{
+    myMinSum = v;
+}
+void cGrouper::maxSum(double v)
+{
+    myMaxSum = v;
+}
+void cGrouper::minSize(int v)
+{
+    myMinSize = v;
+}
 
 void cGrouper::readfileAdjancylist(const std::string &fname)
 {
@@ -161,7 +164,7 @@ void cGrouper::bfs(int start)
             sum += val;
 
             // check for acceptable group
-            if (std::fabs(sum) < 0.5)
+            if ( isGroupAcceptable( visited, sum ))
             {
                 // add this search to the groups
                 addSearch(visited);
@@ -200,13 +203,36 @@ void cGrouper::addSearch(const std::vector<bool> &visited)
     vGroup.push_back(vm);
 }
 
+bool cGrouper::isGroupAcceptable(
+    const std::vector<bool> &visited,
+    double sum)
+{
+    if (myMinSum > sum || sum > myMaxSum)
+        return false;
+    if (visited.size() < myMinSize)
+        return false;
+    return true;
+}
+
 void cGrouper::assign()
 {
+    sanity();
     vMarked.resize(g.vertexCount(), false);
     for (int k = 0; k < g.vertexCount(); k++)
     {
         bfs(k);
     }
+}
+
+void cGrouper::sanity()
+{
+    if (myMinSum > myMaxSum ||
+        myMinSum * myMaxSum > 0)
+        throw std::runtime_error(
+            "Bad group sum range");
+    if (myMinSize < 0)
+        throw std::runtime_error(
+            "Bad minumum group size");
 }
 
 int cGrouper::countAssigned()
@@ -254,7 +280,7 @@ void cGrouper::layout()
     {
         raven::graph::cGraph gtest;
         gtest.add(
-            std::to_string(g.vertexCount() ) + " too many localities to show layout");
+            std::to_string(g.vertexCount()) + " too many localities to show layout");
         vz.viz(gtest);
         return;
     }
@@ -306,13 +332,6 @@ std::string cGrouper::text(int region)
     return ss.str();
 }
 
-std::string cGrouper::regionsIncluded() const
-{
-    std::stringstream ss;
-    for (int r : vRegionInclude)
-        ss << r << " ";
-    return ss.str();
-}
 void cGrouper::regionsIncluded(const std::string &s)
 {
     vRegionInclude.clear();

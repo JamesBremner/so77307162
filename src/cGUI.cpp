@@ -33,7 +33,7 @@ void cGUI::constructMenu()
             ib.add("Regions ( Space separated list e.g. \"84 32\")",
                    grouper.regionsIncluded());
             ib.showModal();
-            grouper.regionsIncluded( ib.value("Regions ( Space separated list e.g. \"84 32\")"));
+            grouper.regionsIncluded(ib.value("Regions ( Space separated list e.g. \"84 32\")"));
             wex::filebox fb(fm);
             auto fname = fb.open();
             fm.text("Grouper " + fname);
@@ -42,6 +42,37 @@ void cGUI::constructMenu()
             grouper.display();
             fm.update();
         });
+
+    /////////////////// Edit //////////////
+
+    wex::menu edit(fm);
+    edit.append(
+        "Algorithm",
+        [&](const std::string &title)
+        {
+            wex::inputbox ib;
+            ib.labelWidth(200);
+            ib.gridWidth(300);
+            ib.text("Edit grouper algorithm parameters");
+            ib.add("Minimum group sum", std::to_string(grouper.minSum()));
+            ib.add("Maximum group sum", std::to_string(grouper.maxSum()));
+            ib.add("Minimum group size", std::to_string(grouper.minSize()));
+            ib.showModal();
+            grouper.minSum(atof(ib.value("Minimum group sum").c_str()));
+            grouper.maxSum(atof(ib.value("Maximum group sum").c_str()));
+            grouper.minSize(atof(ib.value("Minimum group size").c_str()));
+            try
+            {
+                grouper.sanity();
+            }
+            catch (std::exception &e)
+            {
+                wex::msgbox(
+                    std::string("Exception: ") + e.what());
+                    return;
+            }
+        });
+    mbar.append("Edit", edit);
 
     wex::menu view(fm);
     view.append(
@@ -64,7 +95,7 @@ void cGUI::constructMenu()
         {
             wex::inputbox ib;
             ib.labelWidth(200);
-            ib.gridWidth(500);
+            ib.gridWidth(300);
             ib.add("View groups in region",
                    std::to_string(myRegionView));
             ib.showModal();

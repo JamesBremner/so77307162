@@ -10,6 +10,9 @@
 /// @brief Assign localities ( municipalities ) to groups
 class cGrouper
 {
+    double myMinSum;
+    double myMaxSum;
+    int myMinSize;
     raven::graph::cGraph g;                     // The links between touching localities
     std::vector<int> vRegion;                   // Regions of the localities
     std::vector<int> vRegionInclude;            // Regions to be grouped, empty for all
@@ -18,11 +21,17 @@ class cGrouper
 
     void bfs(int start);
     void addSearch( const std::vector<bool>& visited );
+    bool isGroupAcceptable(
+        const std::vector<bool>& visited,
+        double sum     );
 
     void layout();
 
     //////////////////////////////////
 public:
+    
+    cGrouper();
+
     void generateRandom(int range, int width, int height);
     void readfile( const std::string& fname );
     void readfileAdjancylist( const std::string& fname );
@@ -37,6 +46,20 @@ public:
 
     std::string text( int region );
 
-    std::string regionsIncluded() const;
+    /// @brief Check sanity of algorithm parameters, throw exception if fails
+    void sanity();
+
+    // Setters
+
     void regionsIncluded( const std::string& s );
+    void minSum( double v );
+    void maxSum( double v );
+    void minSize( int v );
+
+    // Getters
+
+    std::string regionsIncluded() const;
+    double minSum() const;
+    double maxSum() const;
+    int minSize() const;
 };
