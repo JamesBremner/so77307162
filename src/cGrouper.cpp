@@ -164,7 +164,7 @@ void cGrouper::bfs(int start)
             sum += val;
 
             // check for acceptable group
-            if ( isGroupAcceptable( visited, sum ))
+            if (isGroupAcceptable(visited, sum))
             {
                 // add this search to the groups
                 addSearch(visited);
@@ -209,7 +209,9 @@ bool cGrouper::isGroupAcceptable(
 {
     if (myMinSum > sum || sum > myMaxSum)
         return false;
-    if (visited.size() < myMinSize)
+    if (myMinSize > std::count(
+                        visited.begin(), visited.end(),
+                        true))
         return false;
     return true;
 }
