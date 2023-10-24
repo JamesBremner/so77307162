@@ -33,13 +33,15 @@ https://stackoverflow.com/q/77307162/16582
 
 # Application
 
-To view the locality indices assigned to each group, select menu item `View | groups, text`
+![image](https://github.com/JamesBremner/so77307162/assets/2046227/b9b7efe5-10a4-44f7-88ed-f00b098c5be6)
 
-![image](https://github.com/JamesBremner/so77307162/assets/2046227/3839ed4d-d166-410c-bfa1-0c895e501b2f)
+The File menu allows user to select input and the regions that will be processed.
 
-To view localities in layout image by GraphViz, select menu item `View | groups, layout`
+The Edit menu allows user to edit the parameters controlling which localities can shere their land takes.
 
-![image](https://github.com/JamesBremner/so77307162/assets/2046227/4d4e0881-43df-4b21-9b45-f668bec78a61)
+The View menu allows user to control which region will be displayed in the GUI.
+
+The Help menu pops up a description of the application.
 
 # Sample Input
 
