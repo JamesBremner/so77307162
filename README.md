@@ -35,7 +35,7 @@ https://stackoverflow.com/q/77307162/16582
 
 ![image](https://github.com/JamesBremner/so77307162/assets/2046227/b9b7efe5-10a4-44f7-88ed-f00b098c5be6)
 
-The File menu allows user to select input and the regions that will be processed.
+The File menu allows user to select input and the regions that will be processed. [Detailed Documentation](https://github.com/JamesBremner/so77307162/wiki/Input-file-format)
 
 The Edit menu allows user to edit the parameters controlling which localities can shere their land takes.
 
