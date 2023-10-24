@@ -75,7 +75,7 @@ class cGUI : public cStarterGUI
 public:
     cGUI()
         : cStarterGUI(
-              "Grouper",
+              "Depaver",
               {50, 50, 1000, 500}),
         pldisplay(wex::maker::make<wex::panel>(fm)),
         myRegionView( 84 )

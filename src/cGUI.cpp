@@ -16,7 +16,7 @@ void cGUI::constructMenu()
         {
             wex::filebox fb(fm);
             auto fname = fb.open();
-            fm.text("Grouper " + fname);
+            fm.text("Depaver " + fname);
             grouper.readfileAdjancylist(fname);
             grouper.assign();
             grouper.display();
@@ -69,10 +69,12 @@ void cGUI::constructMenu()
             {
                 wex::msgbox(
                     std::string("Exception: ") + e.what());
-                    return;
+                return;
             }
         });
     mbar.append("Edit", edit);
+
+    ///////////// View /////////////
 
     wex::menu view(fm);
     view.append(
@@ -103,6 +105,26 @@ void cGUI::constructMenu()
             fm.update();
         });
     mbar.append("View", view);
+
+    //////////////////// Help /////////////////////////
+
+    wex::menu help(fm);
+    help.append(
+        "About",
+        [&](const std::string &title) {
+            wex::msgbox mb(
+                fm,
+                "Depaver identifies municipalities that can share land takes.\n\n"
+                "Land take is the conversion of natural land to sealed soil as a result of urbanization.\n\n"
+                "European policy aims to halt land take by reducing it by 50% by 2030.\n"
+                "The input data is a series of surplus/deficits for each locality measured in hectares based on its needs for the next decade. "
+                "Surplus means the locality has extra hectares compared to the 50%, deficits means they have less. "
+                "Localities can share hectares.\n\n"
+                "(c) 2023 James Bremner",
+                "About the Depaver Application",
+                (unsigned int) 0);
+        });
+    mbar.append("Help", help);
 }
 void cGUI::draw()
 {

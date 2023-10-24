@@ -36,7 +36,7 @@ $(ODIR)/%.o: %.cpp
 	-c -o $@ $< $(INCS)
 
 starter: $(OBJ_starter)
-	g++ -o bin/grouper.exe  \
+	g++ -o bin/depaver.exe  \
 	$(OPT) $^  \
 	$(static_link_flags) $(LIBS)
 
