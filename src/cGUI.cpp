@@ -19,7 +19,7 @@ void cGUI::constructMenu()
             fm.text("Depaver " + fname);
             grouper.readfileAdjancylist(fname);
             grouper.assign();
-            grouper.display();
+            grouper.writeGroupList();
             fm.update();
         });
     mbar.append("File", file);
@@ -39,7 +39,7 @@ void cGUI::constructMenu()
             fm.text("Grouper " + fname);
             grouper.readfileAdjancylist(fname);
             grouper.assign();
-            grouper.display();
+            grouper.writeGroupList();
             fm.update();
         });
 

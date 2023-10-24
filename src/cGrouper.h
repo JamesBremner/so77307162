@@ -18,6 +18,7 @@ class cGrouper
     std::vector<int> vRegionInclude;            // Regions to be grouped, empty for all
     std::vector<bool> vMarked;                  // The localities that have been assigned to groups
     std::vector<std::vector<int>> vGroup;       // Groups of localities
+    std::string myGroupListPath;
 
     void bfs(int start);
     void addSearch( const std::vector<bool>& visited );
@@ -32,9 +33,8 @@ public:
     
     cGrouper();
 
-    void generateRandom(int range, int width, int height);
-    void readfile( const std::string& fname );
     void readfileAdjancylist( const std::string& fname );
+    void writeGroupList();
 
     /// @brief Assign localities to groups
     void assign();

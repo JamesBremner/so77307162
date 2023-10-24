@@ -2,6 +2,7 @@
 #include <sstream>
 #include <queue>
 #include <cmath>
+#include <filesystem>
 
 #include "cGraph.h"
 #include "viz.h"
@@ -316,8 +317,12 @@ std::string cGrouper::text(int region)
     std::stringstream ss;
     ss << "\n"
        << countAssigned() << " of " << g.vertexCount()
-       << " localities assigned\n\n";
+       << " localities assigned to " << vGroup.size()
+       << " groups. All groups written to " << myGroupListPath
+       << "\n\n";
+
     ss << "Groups in region " << region << "\n";
+
     for (auto &vm : vGroup)
     {
         if (vRegion[vm[0]] != region)
@@ -332,6 +337,48 @@ std::string cGrouper::text(int region)
         ss << " sum: " << sum << "\n";
     }
     return ss.str();
+}
+
+static std::string readableTimeStamp()
+{
+    time_t rawtime;
+    struct tm *timeinfo;
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+    char buf[100];
+    strftime(buf, 99, "%Y_%b_%d_%H_%M_%S", timeinfo);
+    return std::string(buf);
+}
+
+void cGrouper::writeGroupList()
+{
+    myGroupListPath =
+        std::filesystem::current_path().string() +
+        "\\grouplist" +
+        readableTimeStamp() +
+        ".txt";
+
+    std::ofstream ofs(myGroupListPath);
+    if (!ofs.is_open())
+    {
+        auto fn = myGroupListPath;
+        myGroupListPath.clear();
+        throw std::runtime_error(
+            "Cannot open group list file " + fn);
+    }
+
+    for (auto &vm : vGroup)
+    {
+        ofs << "============\n";
+        double sum = 0;
+        for (int v : vm)
+        {
+            ofs << g.userName(v)
+                << " " << g.rVertexAttr(v, 0) << " ";
+            sum += atof(g.rVertexAttr(v, 0).c_str());
+        }
+        ofs << "sum " << sum << "\n";
+    }
 }
 
 void cGrouper::regionsIncluded(const std::string &s)
