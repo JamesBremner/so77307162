@@ -19,6 +19,8 @@ class cGrouper
     void bfs(int start);
     void addSearch( const std::vector<bool>& visited );
 
+    void layout();
+
     //////////////////////////////////
 public:
     void generateRandom(int range, int width, int height);

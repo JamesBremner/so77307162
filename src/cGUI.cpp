@@ -17,9 +17,9 @@ void cGUI::constructMenu()
             wex::filebox fb(fm);
             auto fname = fb.open();
             fm.text("Grouper " + fname);
-            muni.readfileAdjancylist(fname);
-            muni.assign();
-            muni.display();
+            grouper.readfileAdjancylist(fname);
+            grouper.assign();
+            grouper.display();
             fm.update();
         });
     mbar.append("File", file);
@@ -31,15 +31,15 @@ void cGUI::constructMenu()
             ib.labelWidth(200);
             ib.gridWidth(500);
             ib.add("Regions ( Space separated list e.g. \"84 32\")",
-                   muni.regionsIncluded());
+                   grouper.regionsIncluded());
             ib.showModal();
-            muni.regionsIncluded( ib.value("Regions ( Space separated list e.g. \"84 32\")"));
+            grouper.regionsIncluded( ib.value("Regions ( Space separated list e.g. \"84 32\")"));
             wex::filebox fb(fm);
             auto fname = fb.open();
             fm.text("Grouper " + fname);
-            muni.readfileAdjancylist(fname);
-            muni.assign();
-            muni.display();
+            grouper.readfileAdjancylist(fname);
+            grouper.assign();
+            grouper.display();
             fm.update();
         });
 
@@ -79,7 +79,7 @@ void cGUI::draw()
     {
     case eDisplay::text:
         pldisplay.show();
-        pldisplay.text(muni.text(myRegionView));
+        pldisplay.text(grouper.text(myRegionView));
         pldisplay.update();
         break;
 

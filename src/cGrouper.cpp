@@ -164,7 +164,7 @@ void cGrouper::bfs(int start)
             if (std::fabs(sum) < 0.5)
             {
                 // add this search to the groups
-                addSearch( visited );
+                addSearch(visited);
 
                 // return to start a new search somewhere else
                 return;
@@ -242,12 +242,26 @@ void cGrouper::display()
         std::cout << "sum " << sum << "\n";
     }
 
+    layout();
+}
+
+void cGrouper::layout()
+{
+    raven::graph::cViz vz;
+
+    // check layout calculation will take a reasonable time
     if (g.vertexCount() > 100)
+    {
+        raven::graph::cGraph gtest;
+        gtest.add(
+            std::to_string(g.vertexCount() ) + " too many localities to show layout");
+        vz.viz(gtest);
         return;
+    }
 
     std::vector<std::string> vColor{
         "red", "blue", "green", "aquamarine2", "chocolate2"};
-    raven::graph::cViz vz;
+
     vz.setVertexColor(
         [this, &vColor](int v)
         {

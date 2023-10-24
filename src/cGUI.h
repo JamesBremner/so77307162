@@ -96,7 +96,7 @@ public:
     }
 
 private:
-    cGrouper muni;
+    cGrouper grouper;
 
     enum class eDisplay
     {
