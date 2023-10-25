@@ -254,6 +254,8 @@ void cGrouper::addSearch(const std::vector<bool> &visited)
             vMarked[kv] = true;
         }
     vGroup.push_back(vm);
+    std::cout << vGroup.size()<< " groups "
+        << countAssigned() << " assigned\n";
 }
 
 bool cGrouper::isGroupAcceptable(
@@ -274,7 +276,10 @@ void cGrouper::assign()
     sanity();
 
     // clear assigned localities
+    vMarked.clear();
     vMarked.resize(g.vertexCount(), false);
+
+    vGroup.clear();
 
     // loop over localities, starting a modified BFS from each unassigned
     for (int start = 0; start < g.vertexCount(); start++)
@@ -365,16 +370,25 @@ void cGrouper::layout()
     vz.viz(g);
 }
 
+std::string cGrouper::textStats()
+{
+     std::stringstream ss;
+     ss << "Sum " << myMinSum << " to " <<  myMaxSum 
+        <<", Min. Size " << myMinSize << "\n";
+     ss << countAssigned() << " of " << g.vertexCount()
+       << " localities assigned to " << vGroup.size()
+       << " groups.\n";
+    return ss.str();
+}
+
 std::string cGrouper::text(int region)
 {
     if (!vGroup.size())
         return "\n\n\n     Use menu item File | Adjacency List to select input file";
 
     std::stringstream ss;
-    ss << "\n"
-       << countAssigned() << " of " << g.vertexCount()
-       << " localities assigned to " << vGroup.size()
-       << " groups. All groups written to " << myGroupListPath
+    ss << "\n" << textStats()
+       << "All groups written to " << myGroupListPath
        << "\n\n";
 
     ss << "Groups in region " << region << "\n";
@@ -423,6 +437,7 @@ void cGrouper::writeGroupList()
             "Cannot open group list file " + fn);
     }
 
+    ofs << textStats() << "\n";
     for (auto &vm : vGroup)
     {
         ofs << "============\n";
