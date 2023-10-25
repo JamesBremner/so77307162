@@ -25,6 +25,7 @@ class cGrouper
     bool isGroupAcceptable(
         const std::vector<bool>& visited,
         double sum     );
+    bool isLocalIncluded( const::std::string& slocRegion);
 
     void layout();
 

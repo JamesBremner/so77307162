@@ -49,6 +49,17 @@ void cGrouper::minSize(int v)
     myMinSize = v;
 }
 
+bool cGrouper::isLocalIncluded(const ::std::string &slocRegion)
+{
+    // check if all regions included
+    if (!vRegionInclude.size())
+        return true;
+
+    return (std::find(
+                vRegionInclude.begin(), vRegionInclude.end(),
+                atoi(slocRegion.c_str())) != vRegionInclude.end());
+}
+
 void cGrouper::readfileAdjancylist(const std::string &fname)
 {
     std::ifstream ifs(fname);
@@ -59,6 +70,40 @@ void cGrouper::readfileAdjancylist(const std::string &fname)
     g.clear();
 
     std::string line;
+    std::vector<int> vlocalincluded;
+
+    // identify localities in the included regions TID11
+    if (vRegionInclude.size())
+    {
+        getline(ifs, line);
+        while (getline(ifs, line))
+        {
+            // the file is first delimited by semicolons
+            std::vector<std::string> vtoken;
+            std::stringstream sst(line);
+            std::string a;
+            while (getline(sst, a, ';'))
+                vtoken.push_back(a);
+
+            if (vtoken.size() != 4)
+            {
+                std::cout << line << "\n";
+                throw std::runtime_error(
+                    "Format error in adjancies file");
+            }
+
+            // check if locality in region to be included
+            if (isLocalIncluded(vtoken[3]))
+                vlocalincluded.push_back(atoi(vtoken[0].c_str()));
+        }
+        std::cout << "finished 1st pass through input\n";
+
+        // rewind input to start
+        // ifs.seekg( 0, ifs.beg );
+        ifs.close();
+        ifs.open(fname);
+    }
+
     getline(ifs, line);
     while (getline(ifs, line))
     {
@@ -83,13 +128,8 @@ void cGrouper::readfileAdjancylist(const std::string &fname)
         // std::cout << vtoken[2] << "\n================\n";
 
         // check if locality in region to be included
-        if (vRegionInclude.size())
-        {
-            if (std::find(
-                    vRegionInclude.begin(), vRegionInclude.end(),
-                    atoi(vtoken[3].c_str())) == vRegionInclude.end())
+        if( ! isLocalIncluded(vtoken[3] ))
                 continue;
-        }
 
         int vi = g.find(vtoken[0]);
         if (vi < 0)
@@ -106,7 +146,19 @@ void cGrouper::readfileAdjancylist(const std::string &fname)
         // the adjacencies are space delimited
         std::stringstream ssta(vtoken[1]);
         while (getline(ssta, a, ' '))
+        {
+            // check if the adjacent locality is in the included regions TID11
+            if (vRegionInclude.size())
+            {
+                if (std::find(
+                        vlocalincluded.begin(), vlocalincluded.end(),
+                        atoi(a.c_str())) == vlocalincluded.end())
+                    continue;
+            }
+
+            // add the adjacent locality
             g.add(vtoken[0], a);
+        }
 
         if (!(g.vertexCount() % 1000))
             std::cout << "read " << g.vertexCount() << " localities\n";
@@ -220,10 +272,14 @@ bool cGrouper::isGroupAcceptable(
 void cGrouper::assign()
 {
     sanity();
+
+    // clear assigned localities
     vMarked.resize(g.vertexCount(), false);
-    for (int k = 0; k < g.vertexCount(); k++)
+
+    // loop over localities, starting a modified BFS from each unassigned
+    for (int start = 0; start < g.vertexCount(); start++)
     {
-        bfs(k);
+        bfs(start);
     }
 }
 
