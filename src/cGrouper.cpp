@@ -128,8 +128,8 @@ void cGrouper::readfileAdjancylist(const std::string &fname)
         // std::cout << vtoken[2] << "\n================\n";
 
         // check if locality in region to be included
-        if( ! isLocalIncluded(vtoken[3] ))
-                continue;
+        if (!isLocalIncluded(vtoken[3]))
+            continue;
 
         int vi = g.find(vtoken[0]);
         if (vi < 0)
@@ -254,8 +254,8 @@ void cGrouper::addSearch(const std::vector<bool> &visited)
             vMarked[kv] = true;
         }
     vGroup.push_back(vm);
-    std::cout << vGroup.size()<< " groups "
-        << countAssigned() << " assigned\n";
+    std::cout << vGroup.size() << " groups "
+              << countAssigned() << " assigned\n";
 }
 
 bool cGrouper::isGroupAcceptable(
@@ -372,10 +372,10 @@ void cGrouper::layout()
 
 std::string cGrouper::textStats()
 {
-     std::stringstream ss;
-     ss << "Sum " << myMinSum << " to " <<  myMaxSum 
-        <<", Min. Size " << myMinSize << "\n";
-     ss << countAssigned() << " of " << g.vertexCount()
+    std::stringstream ss;
+    ss << "Sum " << myMinSum << " to " << myMaxSum
+       << ", Min. Size " << myMinSize << "\n";
+    ss << countAssigned() << " of " << g.vertexCount()
        << " localities assigned to " << vGroup.size()
        << " groups.\n";
     return ss.str();
@@ -387,8 +387,10 @@ std::string cGrouper::text(int region)
         return "\n\n\n     Use menu item File | Adjacency List to select input file";
 
     std::stringstream ss;
-    ss << "\n" << textStats()
+    ss << "\n"
+       << textStats()
        << "All groups written to " << myGroupListPath
+       << "\nAll localities written to " << myAssignTablePath
        << "\n\n";
 
     ss << "Groups in region " << region << "\n";
@@ -459,4 +461,64 @@ void cGrouper::regionsIncluded(const std::string &s)
     std::string a;
     while (getline(sst, a, ' '))
         vRegionInclude.push_back(atoi(a.c_str()));
+}
+
+void cGrouper::writeAssignTable()
+{
+    std::vector<std::vector<std::string>> table;
+    int groupID = 0;
+    for (auto &grp : vGroup)
+    {
+        double sum = 0;
+        for (int loc : grp)
+            sum += atof(g.rVertexAttr(loc, 0).c_str());
+        auto ssum = std::to_string(sum);
+
+        for (int loc : grp)
+        {
+            std::vector<std::string> row;
+            row.push_back(g.userName(loc));
+            row.push_back(g.rVertexAttr(loc, 0));
+            row.push_back(std::to_string(groupID));
+            row.push_back(std::to_string(grp.size()));
+            row.push_back(ssum);
+            table.push_back(row);
+        }
+        groupID++;
+    }
+    std::sort(
+        table.begin(), table.end(),
+        [](const std::vector<std::string> &row1,
+           const std::vector<std::string> &row2)
+        {
+            return (
+                atoi(row1[0].c_str()) <
+                atoi(row2[0].c_str()));
+        });
+
+    myAssignTablePath =
+        std::filesystem::current_path().string() +
+        "\\assigntable" +
+        readableTimeStamp() +
+        ".txt";
+
+    std::ofstream ofs(myAssignTablePath);
+    if (!ofs.is_open())
+    {
+        auto fn = myGroupListPath;
+        myGroupListPath.clear();
+        throw std::runtime_error(
+            "Cannot open assign table file " + fn);
+    }
+
+    ofs << textStats();
+    ofs << "locality deficit group size sum\n";
+    for (auto &row : table)
+    {
+        for (auto &c : row)
+        {
+            ofs << c << " ";
+        }
+        ofs << "\n";
+    }
 }

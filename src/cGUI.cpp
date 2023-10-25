@@ -20,6 +20,7 @@ void cGUI::constructMenu()
             grouper.readfileAdjancylist(fname);
             grouper.assign();
             grouper.writeGroupList();
+            grouper.writeAssignTable();
             fm.update();
         });
     mbar.append("File", file);
@@ -40,6 +41,7 @@ void cGUI::constructMenu()
             grouper.readfileAdjancylist(fname);
             grouper.assign();
             grouper.writeGroupList();
+            grouper.writeAssignTable();
             fm.update();
         });
 
