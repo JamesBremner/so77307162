@@ -57,7 +57,7 @@ bool cGrouper::isLocalIncluded(const ::std::string &slocRegion)
 
 void cGrouper::readfileAdjancylist(const std::string &fname)
 {
-    if( fname.empty() )
+    if (fname.empty())
         return;
 
     std::ifstream ifs(fname);
@@ -166,7 +166,8 @@ void cGrouper::readfileAdjancylist(const std::string &fname)
     std::cout << "finished reading " << g.vertexCount() << " localities\n";
 }
 
-void cGrouper::bfs(int start)
+void cGrouper::bfs(
+    int start)
 {
     // check start already assigned to a group
     if (vMarked[start])
@@ -202,6 +203,7 @@ void cGrouper::bfs(int start)
             if (visited[adj])
                 continue;
 
+            // the deficit value
             double val = atof(g.rVertexAttr(adj, 0).c_str());
 
             // ignore localities that take sum further away from zero
@@ -278,34 +280,54 @@ void cGrouper::sanity()
 
 void cGrouper::assign()
 {
-    std::cout << "Assign Pass 1\n";
     myAlgoParams.sanity();
-     myAlgoParams.pass = 1;
+    myAlgoParams.pass = 1;
 
     // clear assigned localities
     vMarked.clear();
     vMarked.resize(g.vertexCount(), false);
-
     vGroup.clear();
 
-    // loop over localities, starting a modified BFS from each unassigned
-    for (int start = 0; start < g.vertexCount(); start++)
+    // loop over components TID15
+    for (auto &comp : components(g))
     {
-        bfs(start);
+        // check if component small enough to be a group
+        if (comp.size() < myAlgoParams.MinSize)
+        {
+            std::vector<bool> visited(g.vertexCount(), false);
+            for (int vi : comp)
+                visited[vi] = true;
+            addSearch(visited);
+            continue; // to next component
+        }
+
+        std::cout << "Assign Pass 1\n";
+        myAlgoParams.pass = 1;
+
+        // loop over localities, starting a modified BFS from each unassigned in the component
+        for (int start = 0; start < g.vertexCount(); start++)
+        {
+            // check start is in component
+            if (std::find(
+                    comp.begin(), comp.end(), start) != comp.end())
+                bfs(start);
+        }
+
+        if (!myAlgoParams.f2pass)
+            continue;
+
+        std::cout << "Assign Pass 2\n";
+        myAlgoParams.pass = 2;
+
+        // loop over localities, starting a modified BFS from each unassigned
+        for (int start = 0; start < g.vertexCount(); start++)
+        {
+            // check start is in component
+            if (std::find(
+                    comp.begin(), comp.end(), start) != comp.end())
+                bfs(start);
+        }
     }
-
-    if( ! myAlgoParams.f2pass )
-        return;
-
-    std::cout << "Assign Pass 2\n";
-    myAlgoParams.pass = 2;
-
-    // loop over localities, starting a modified BFS from each unassigned
-    for (int start = 0; start < g.vertexCount(); start++)
-    {
-        bfs(start);
-    }
-
 }
 
 cGrouper::sAlgoParams::sAlgoParams()
