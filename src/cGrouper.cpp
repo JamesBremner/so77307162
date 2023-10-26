@@ -25,12 +25,24 @@ cGrouper::sAlgoParams cGrouper::algoParams() const
     return myAlgoParams;
 }
 
-   void cGrouper::algoParams( double minSum, double maxSum, int minSize )
-   {
+void cGrouper::algoParams(double minSum, double maxSum, int minSize)
+{
     myAlgoParams.MinSum = minSum;
     myAlgoParams.MaxSum = maxSum;
     myAlgoParams.MinSize = minSize;
-   }
+}
+void cGrouper::passes(
+    bool f,
+    double minSum, double maxSum, int minSize)
+{
+    myAlgoParams.f2pass = f;
+    if (f)
+    {
+        myAlgoParams.MinSum2 = minSum;
+        myAlgoParams.MaxSum2 = maxSum;
+        myAlgoParams.MinSize2 = minSize;
+    }
+}
 
 bool cGrouper::isLocalIncluded(const ::std::string &slocRegion)
 {
@@ -45,6 +57,9 @@ bool cGrouper::isLocalIncluded(const ::std::string &slocRegion)
 
 void cGrouper::readfileAdjancylist(const std::string &fname)
 {
+    if( fname.empty() )
+        return;
+
     std::ifstream ifs(fname);
     if (!ifs.is_open())
         throw std::runtime_error(
@@ -243,11 +258,15 @@ bool cGrouper::isGroupAcceptable(
     const std::vector<bool> &visited,
     double sum)
 {
-    if (myAlgoParams.MinSum > sum || sum > myAlgoParams.MaxSum)
+    double MinSum, MaxSum;
+    int MinSize;
+    myAlgoParams.getParams(MinSum, MaxSum, MinSize);
+
+    if (MinSum > sum || sum > MaxSum)
         return false;
-    if (myAlgoParams.MinSize > std::count(
-                        visited.begin(), visited.end(),
-                        true))
+    if (MinSize > std::count(
+                      visited.begin(), visited.end(),
+                      true))
         return false;
     return true;
 }
@@ -259,7 +278,9 @@ void cGrouper::sanity()
 
 void cGrouper::assign()
 {
+    std::cout << "Assign Pass 1\n";
     myAlgoParams.sanity();
+     myAlgoParams.pass = 1;
 
     // clear assigned localities
     vMarked.clear();
@@ -272,6 +293,31 @@ void cGrouper::assign()
     {
         bfs(start);
     }
+
+    if( ! myAlgoParams.f2pass )
+        return;
+
+    std::cout << "Assign Pass 2\n";
+    myAlgoParams.pass = 2;
+
+    // loop over localities, starting a modified BFS from each unassigned
+    for (int start = 0; start < g.vertexCount(); start++)
+    {
+        bfs(start);
+    }
+
+}
+
+cGrouper::sAlgoParams::sAlgoParams()
+    : MinSum(-5),
+      MaxSum(5),
+      MinSize(5),
+      MinSum2(-25),
+      MaxSum2(25),
+      MinSize2(2),
+      f2pass(false),
+      pass(1)
+{
 }
 
 void cGrouper::sAlgoParams::sanity()
@@ -283,6 +329,29 @@ void cGrouper::sAlgoParams::sanity()
     if (MinSize < 0)
         throw std::runtime_error(
             "Bad minumum group size");
+}
+
+void cGrouper::sAlgoParams::getParams(
+    double &minSum,
+    double &maxSum,
+    int &minSize) const
+{
+    switch (pass)
+    {
+    case 1:
+        minSum = MinSum;
+        maxSum = MaxSum;
+        minSize = MinSize;
+        break;
+    case 2:
+        minSum = MinSum2;
+        maxSum = MaxSum2;
+        minSize = MinSize2;
+        break;
+    default:
+        throw std::runtime_error(
+            "sAlgoParams::getParam bad pass");
+    }
 }
 
 int cGrouper::countAssigned()

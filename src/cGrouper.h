@@ -14,15 +14,28 @@ class cGrouper
         double MinSum;
         double MaxSum;
         int MinSize;
+        double MinSum2;
+        double MaxSum2;
+        int MinSize2;
 
-        sAlgoParams()
-            : MinSum(-0.5),
-              MaxSum(0.5),
-              MinSize(0)
-        {
-        }
-    /// @brief Check sanity of algorithm parameters, throw exception if fails
+        bool f2pass; // true if 2 passes required
+        int pass;    // current pass
+
+        sAlgoParams();
+
+        /// @brief Check sanity of algorithm parameters, throw exception if fails
+
         void sanity();
+
+        /// @brief Get parameters for current pass
+        /// @param minSum
+        /// @param maxSum
+        /// @param minSize
+        
+        void getParams(
+            double &minSum,
+            double &maxSum,
+            int &minSize) const;
     };
 
     sAlgoParams myAlgoParams;
@@ -68,12 +81,24 @@ public:
     // Setters
 
     void regionsIncluded(const std::string &s);
-    void algoParams( double minSum, double maxSum, int minSize );
 
+    /// @brief algorithm parameters for 1st pass
+    /// @param minSum
+    /// @param maxSum
+    /// @param minSize
+    void algoParams(double minSum, double maxSum, int minSize);
+
+    /// @brief algorithm parameters for 2nd pass
+    /// @param f        true if 2nd pass required
+    /// @param minSum
+    /// @param maxSum
+    /// @param minSize
+    void passes(
+        bool f,
+        double minSum, double maxSum, int minSize);
 
     // Getters
 
     std::string regionsIncluded() const;
     sAlgoParams algoParams() const;
-
 };

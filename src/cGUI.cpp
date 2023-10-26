@@ -50,31 +50,9 @@ void cGUI::constructMenu()
     wex::menu edit(fm);
     edit.append(
         "Algorithm",
-        [&](const std::string &title)
+        [this](const std::string &title)
         {
-            auto ap = grouper.algoParams();
-            wex::inputbox ib;
-            ib.labelWidth(200);
-            ib.gridWidth(300);
-            ib.text("Edit grouper algorithm parameters");
-            ib.add("Minimum group sum", std::to_string(ap.MinSum));
-            ib.add("Maximum group sum", std::to_string(ap.MaxSum));
-            ib.add("Minimum group size", std::to_string(ap.MinSize));
-            ib.showModal();
-            grouper.algoParams(
-                atof(ib.value("Minimum group sum").c_str()),
-                atof(ib.value("Maximum group sum").c_str()),
-                atoi(ib.value("Minimum group size").c_str()));
-            try
-            {
-                grouper.sanity();
-            }
-            catch (std::exception &e)
-            {
-                wex::msgbox(
-                    std::string("Exception: ") + e.what());
-                return;
-            }
+            promptAlgoParams();
         });
     mbar.append("Edit", edit);
 
@@ -130,6 +108,50 @@ void cGUI::constructMenu()
                 (unsigned int)0);
         });
     mbar.append("Help", help);
+}
+
+void cGUI::promptAlgoParams()
+{
+    // get current algorithm parameter values
+    auto ap = grouper.algoParams();
+
+    wex::inputbox ib;
+    ib.labelWidth(200);
+    ib.gridWidth(300);
+    ib.text("Edit assignment algorithm parameters");
+    ib.add("Minimum group sum", std::to_string(ap.MinSum));
+    ib.add("Maximum group sum", std::to_string(ap.MaxSum));
+    ib.add("Minimum group size", std::to_string(ap.MinSize));
+    ib.check("2 passes", ap.f2pass);
+    ib.add("Minimum group sum pass 2", std::to_string(ap.MinSum2));
+    ib.add("Maximum group sum pass 2", std::to_string(ap.MaxSum2));
+    ib.add("Minimum group size pass 2", std::to_string(ap.MinSize2));
+    ib.showModal();
+    grouper.algoParams(
+        atof(ib.value("Minimum group sum").c_str()),
+        atof(ib.value("Maximum group sum").c_str()),
+        atoi(ib.value("Minimum group size").c_str()));
+    grouper.passes(
+        ib.isChecked("2 passes"),
+        atof(ib.value("Minimum group sum pass 2").c_str()),
+        atof(ib.value("Maximum group sum pass 2").c_str()),
+        atoi(ib.value("Minimum group size pass 2").c_str()));
+
+    try
+    {
+        grouper.sanity();
+    }
+    catch (std::exception &e)
+    {
+        wex::msgbox(
+            std::string("Exception: ") + e.what());
+        return;
+    }
+
+    grouper.assign();
+    grouper.writeGroupList();
+    grouper.writeAssignTable();
+    fm.update();
 }
 void cGUI::draw()
 {
