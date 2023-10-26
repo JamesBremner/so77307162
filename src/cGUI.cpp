@@ -52,17 +52,19 @@ void cGUI::constructMenu()
         "Algorithm",
         [&](const std::string &title)
         {
+            auto ap = grouper.algoParams();
             wex::inputbox ib;
             ib.labelWidth(200);
             ib.gridWidth(300);
             ib.text("Edit grouper algorithm parameters");
-            ib.add("Minimum group sum", std::to_string(grouper.minSum()));
-            ib.add("Maximum group sum", std::to_string(grouper.maxSum()));
-            ib.add("Minimum group size", std::to_string(grouper.minSize()));
+            ib.add("Minimum group sum", std::to_string(ap.MinSum));
+            ib.add("Maximum group sum", std::to_string(ap.MaxSum));
+            ib.add("Minimum group size", std::to_string(ap.MinSize));
             ib.showModal();
-            grouper.minSum(atof(ib.value("Minimum group sum").c_str()));
-            grouper.maxSum(atof(ib.value("Maximum group sum").c_str()));
-            grouper.minSize(atof(ib.value("Minimum group size").c_str()));
+            grouper.algoParams(
+                atof(ib.value("Minimum group sum").c_str()),
+                atof(ib.value("Maximum group sum").c_str()),
+                atoi(ib.value("Minimum group size").c_str()));
             try
             {
                 grouper.sanity();
@@ -113,7 +115,8 @@ void cGUI::constructMenu()
     wex::menu help(fm);
     help.append(
         "About",
-        [&](const std::string &title) {
+        [&](const std::string &title)
+        {
             wex::msgbox mb(
                 fm,
                 "Depaver identifies municipalities that can share land takes.\n\n"
@@ -124,7 +127,7 @@ void cGUI::constructMenu()
                 "Localities can share hectares.\n\n"
                 "(c) 2023 James Bremner",
                 "About the Depaver Application",
-                (unsigned int) 0);
+                (unsigned int)0);
         });
     mbar.append("Help", help);
 }

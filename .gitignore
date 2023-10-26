@@ -28,8 +28,7 @@
 
 # Executables
 *.exe
-*.out
-*.app
-bin/Dictionary.db
-bin/cw.txt
+
+*grouplist*
+*assigntable*
 

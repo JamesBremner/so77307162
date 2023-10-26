@@ -10,9 +10,6 @@
 #include "cGrouper.h"
 
 cGrouper::cGrouper()
-    : myMinSum(-0.5),
-      myMaxSum(0.5),
-      myMinSize(0)
 {
 }
 
@@ -23,31 +20,17 @@ std::string cGrouper::regionsIncluded() const
         ss << r << " ";
     return ss.str();
 }
-double cGrouper::minSum() const
+cGrouper::sAlgoParams cGrouper::algoParams() const
 {
-    return myMinSum;
-}
-double cGrouper::maxSum() const
-{
-    return myMaxSum;
-}
-int cGrouper::minSize() const
-{
-    return myMinSize;
+    return myAlgoParams;
 }
 
-void cGrouper::minSum(double v)
-{
-    myMinSum = v;
-}
-void cGrouper::maxSum(double v)
-{
-    myMaxSum = v;
-}
-void cGrouper::minSize(int v)
-{
-    myMinSize = v;
-}
+   void cGrouper::algoParams( double minSum, double maxSum, int minSize )
+   {
+    myAlgoParams.MinSum = minSum;
+    myAlgoParams.MaxSum = maxSum;
+    myAlgoParams.MinSize = minSize;
+   }
 
 bool cGrouper::isLocalIncluded(const ::std::string &slocRegion)
 {
@@ -254,26 +237,29 @@ void cGrouper::addSearch(const std::vector<bool> &visited)
             vMarked[kv] = true;
         }
     vGroup.push_back(vm);
-    std::cout << vGroup.size() << " groups "
-              << countAssigned() << " assigned\n";
 }
 
 bool cGrouper::isGroupAcceptable(
     const std::vector<bool> &visited,
     double sum)
 {
-    if (myMinSum > sum || sum > myMaxSum)
+    if (myAlgoParams.MinSum > sum || sum > myAlgoParams.MaxSum)
         return false;
-    if (myMinSize > std::count(
+    if (myAlgoParams.MinSize > std::count(
                         visited.begin(), visited.end(),
                         true))
         return false;
     return true;
 }
 
+void cGrouper::sanity()
+{
+    myAlgoParams.sanity();
+}
+
 void cGrouper::assign()
 {
-    sanity();
+    myAlgoParams.sanity();
 
     // clear assigned localities
     vMarked.clear();
@@ -288,13 +274,13 @@ void cGrouper::assign()
     }
 }
 
-void cGrouper::sanity()
+void cGrouper::sAlgoParams::sanity()
 {
-    if (myMinSum > myMaxSum ||
-        myMinSum * myMaxSum > 0)
+    if (MinSum > MaxSum ||
+        MinSum * MaxSum > 0)
         throw std::runtime_error(
             "Bad group sum range");
-    if (myMinSize < 0)
+    if (MinSize < 0)
         throw std::runtime_error(
             "Bad minumum group size");
 }
@@ -373,8 +359,9 @@ void cGrouper::layout()
 std::string cGrouper::textStats()
 {
     std::stringstream ss;
-    ss << "Sum " << myMinSum << " to " << myMaxSum
-       << ", Min. Size " << myMinSize << "\n";
+    auto ap = algoParams();
+    ss << "Sum " << ap.MinSum << " to " << ap.MaxSum
+       << ", Min. Size " << ap.MinSize << "\n";
     ss << countAssigned() << " of " << g.vertexCount()
        << " localities assigned to " << vGroup.size()
        << " groups.\n";
