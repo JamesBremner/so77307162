@@ -2,9 +2,9 @@
 
 I have thousands of localities on a map (vector layer). Each of them present a deficit or a surplus.
 
-Localities are two dimensional polygons. Two localities touch when they share an edge. Each locality has a value.
+Localities are two dimensional polygons. Two localities touch when they share an edge. Each locality has a deficit/surplus value.
 
-A group of localities must touch and have a sum of values close to zero (between -0,5 and 0,5).
+A group of localities must touch and have a sum of deficit/surplus values within a specified range from a specified target
 
 The algorithm should try to maximize the size of groups and minimize the amount of localities that belong to no group.
 
