@@ -20,7 +20,7 @@ std::string cGrouper::regionsIncluded() const
         ss << r << " ";
     return ss.str();
 }
-cGrouper::sAlgoParams cGrouper::algoParams() const
+cAlgoParams &cGrouper::algoParams()
 {
     return myAlgoParams;
 }
@@ -288,66 +288,94 @@ void cGrouper::assign()
     vMarked.resize(g.vertexCount(), false);
     vGroup.clear();
 
-    // loop over components TID15
-    std::cout << "Detecting components\n";
-    auto vComp = components(g);
-    std::cout << vComp.size() << " components detected\n";
-    for (auto &comp : vComp)
+    if (myAlgoParams.fComp)
     {
-        // check if component small enough to be a group
-        if (comp.size() < myAlgoParams.MinSize)
+        // loop over components TID15
+        std::cout << "Detecting components\n";
+        auto vComp = components(g);
+        std::cout << vComp.size() << " components detected\n";
+        for (auto &comp : vComp)
         {
-            std::vector<bool> visited(g.vertexCount(), false);
-            for (int vi : comp)
-                visited[vi] = true;
-            addSearch(visited);
-            continue; // to next component
-        }
+            // check if component small enough to be a group
+            if (comp.size() < myAlgoParams.MinSize)
+            {
+                std::vector<bool> visited(g.vertexCount(), false);
+                for (int vi : comp)
+                    visited[vi] = true;
+                addSearch(visited);
+                continue; // to next component
+            }
 
+            std::cout << "Assign Pass 1\n";
+            myAlgoParams.pass = 1;
+
+            // loop over localities, starting a modified BFS from each unassigned in the component
+            for (int start = 0; start < g.vertexCount(); start++)
+            {
+                // check start is in component
+                if (std::find(
+                        comp.begin(), comp.end(), start) != comp.end())
+                    bfs(start);
+            }
+
+            if (!myAlgoParams.f2pass)
+                continue;
+
+            std::cout << "Assign Pass 2\n";
+            myAlgoParams.pass = 2;
+
+            // loop over localities, starting a modified BFS from each unassigned
+            for (int start = 0; start < g.vertexCount(); start++)
+            {
+                // check start is in component
+                if (std::find(
+                        comp.begin(), comp.end(), start) != comp.end())
+                    bfs(start);
+            }
+        }
+    }
+    else
+    {
         std::cout << "Assign Pass 1\n";
         myAlgoParams.pass = 1;
 
-        // loop over localities, starting a modified BFS from each unassigned in the component
+        // loop over localities, starting a modified BFS from each unassigned locality
         for (int start = 0; start < g.vertexCount(); start++)
+            bfs(start);
+
+        if (myAlgoParams.f2pass)
         {
-            // check start is in component
-            if (std::find(
-                    comp.begin(), comp.end(), start) != comp.end())
-                bfs(start);
-        }
+            std::cout << "Assign Pass 2\n";
+            myAlgoParams.pass = 2;
 
-        if (!myAlgoParams.f2pass)
-            continue;
-
-        std::cout << "Assign Pass 2\n";
-        myAlgoParams.pass = 2;
-
-        // loop over localities, starting a modified BFS from each unassigned
-        for (int start = 0; start < g.vertexCount(); start++)
-        {
-            // check start is in component
-            if (std::find(
-                    comp.begin(), comp.end(), start) != comp.end())
+            // loop over localities, starting a modified BFS from each unassigned
+            for (int start = 0; start < g.vertexCount(); start++)
                 bfs(start);
         }
     }
     std::cout << vGroup.size() << " groups assigned\n";
 }
 
-cGrouper::sAlgoParams::sAlgoParams()
-    : MinSum(-5),
+cAlgoParams::cAlgoParams()
+    : trgSum(0),
+      MinSum(-5),
       MaxSum(5),
       MinSize(5),
+      trgSum2(0),
       MinSum2(-25),
       MaxSum2(25),
       MinSize2(2),
       f2pass(false),
-      pass(1)
+      pass(1),
+      fComp(false)
 {
 }
 
-void cGrouper::sAlgoParams::sanity()
+void cAlgoParams::sanity()
 {
+    if (fabs(trgSum) > 0.01)
+        throw std::runtime_error(
+            "Non-zero group sum target NYI");
     if (MinSum > MaxSum ||
         MinSum * MaxSum > 0)
         throw std::runtime_error(
@@ -357,7 +385,7 @@ void cGrouper::sAlgoParams::sanity()
             "Bad minumum group size");
 }
 
-void cGrouper::sAlgoParams::getParams(
+void cAlgoParams::getParams(
     double &minSum,
     double &maxSum,
     int &minSize) const

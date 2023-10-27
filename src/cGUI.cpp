@@ -113,19 +113,22 @@ void cGUI::constructMenu()
 void cGUI::promptAlgoParams()
 {
     // get current algorithm parameter values
-    auto ap = grouper.algoParams();
+    auto& ap = grouper.algoParams();
 
     wex::inputbox ib;
     ib.labelWidth(200);
     ib.gridWidth(300);
     ib.text("Edit assignment algorithm parameters");
+    ib.add("Group sum target",std::to_string(ap.trgSum));
     ib.add("Minimum group sum", std::to_string(ap.MinSum));
     ib.add("Maximum group sum", std::to_string(ap.MaxSum));
     ib.add("Minimum group size", std::to_string(ap.MinSize));
     ib.check("2 passes", ap.f2pass);
+    ib.add("Group sum target pass 2",std::to_string(ap.trgSum2).c_str());
     ib.add("Minimum group sum pass 2", std::to_string(ap.MinSum2));
     ib.add("Maximum group sum pass 2", std::to_string(ap.MaxSum2));
     ib.add("Minimum group size pass 2", std::to_string(ap.MinSize2));
+    ib.check("Components",ap.fComp);
     ib.showModal();
     grouper.algoParams(
         atof(ib.value("Minimum group sum").c_str()),
@@ -136,6 +139,9 @@ void cGUI::promptAlgoParams()
         atof(ib.value("Minimum group sum pass 2").c_str()),
         atof(ib.value("Maximum group sum pass 2").c_str()),
         atoi(ib.value("Minimum group size pass 2").c_str()));
+    ap.trgSum = atof(ib.value("Group sum target").c_str());
+    ap.trgSum2 = atof(ib.value("Group sum target pass 2").c_str());
+    ap.fComp = ib.isChecked("Components");
 
     try
     {

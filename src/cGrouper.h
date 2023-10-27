@@ -6,40 +6,46 @@
 
 #include "GraphTheory.h" // https://github.com/JamesBremner/PathFinder
 
+class cAlgoParams
+{
+    public:
+
+    double trgSum;
+    double MinSum;
+    double MaxSum;
+    int MinSize;
+    double trgSum2;
+    double MinSum2;
+    double MaxSum2;
+    int MinSize2;
+
+    bool f2pass; // true if 2 passes required
+    int pass;    // current pass
+
+    bool fComp; // true if components reuired
+
+
+    cAlgoParams();
+
+    /// @brief Check sanity of algorithm parameters, throw exception if fails
+
+    void sanity();
+
+    /// @brief Get parameters for current pass
+    /// @param minSum
+    /// @param maxSum
+    /// @param minSize
+
+    void getParams(
+        double &minSum,
+        double &maxSum,
+        int &minSize) const;
+};
+
 /// @brief Assign localities ( municipalities ) to groups
 class cGrouper
 {
-    struct sAlgoParams
-    {
-        double MinSum;
-        double MaxSum;
-        int MinSize;
-        double MinSum2;
-        double MaxSum2;
-        int MinSize2;
-
-        bool f2pass; // true if 2 passes required
-        int pass;    // current pass
-
-        sAlgoParams();
-
-        /// @brief Check sanity of algorithm parameters, throw exception if fails
-
-        void sanity();
-
-        /// @brief Get parameters for current pass
-        /// @param minSum
-        /// @param maxSum
-        /// @param minSize
-        
-        void getParams(
-            double &minSum,
-            double &maxSum,
-            int &minSize) const;
-    };
-
-    sAlgoParams myAlgoParams;
-
+    cAlgoParams myAlgoParams;             // Algorithm paramters
     raven::graph::cGraph g;               // The links between touching localities
     std::vector<int> vRegion;             // Regions of the localities
     std::vector<int> vRegionInclude;      // Regions to be grouped, empty for all
@@ -100,5 +106,5 @@ public:
     // Getters
 
     std::string regionsIncluded() const;
-    sAlgoParams algoParams() const;
+    cAlgoParams& algoParams();
 };
