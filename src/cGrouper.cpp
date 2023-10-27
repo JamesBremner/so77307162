@@ -206,8 +206,9 @@ void cGrouper::bfs(
             // the deficit value
             double val = atof(g.rVertexAttr(adj, 0).c_str());
 
-            // ignore localities that take sum further away from zero
-            if (sum * val > 0)
+            // ignore localities that take sum further away from target
+            if (fabs(sum + val - myAlgoParams.trgSum) > 
+                fabs(sum - myAlgoParams.trgSum))
                 continue;
 
             // std::cout << "add potential " << g.userName( adj ) <<" " << val <<" " << sum + val << "\n";
@@ -264,7 +265,8 @@ bool cGrouper::isGroupAcceptable(
     int MinSize;
     myAlgoParams.getParams(MinSum, MaxSum, MinSize);
 
-    if (MinSum > sum || sum > MaxSum)
+    double delta = sum - myAlgoParams.trgSum;
+    if (MinSum > delta || delta > MaxSum)
         return false;
     if (MinSize > std::count(
                       visited.begin(), visited.end(),
@@ -373,11 +375,10 @@ cAlgoParams::cAlgoParams()
 
 void cAlgoParams::sanity()
 {
-    if (fabs(trgSum) > 0.01)
-        throw std::runtime_error(
-            "Non-zero group sum target NYI");
-    if (MinSum > MaxSum ||
-        MinSum * MaxSum > 0)
+    // if (fabs(trgSum) > 0.01)
+    //     throw std::runtime_error(
+    //         "Non-zero group sum target NYI");
+    if( MinSum > MaxSum)
         throw std::runtime_error(
             "Bad group sum range");
     if (MinSize < 0)
@@ -483,7 +484,7 @@ std::string cGrouper::textStats()
 {
     std::stringstream ss;
     auto ap = algoParams();
-    ss << "Sum " << ap.MinSum << " to " << ap.MaxSum
+    ss << "Sum " << ap.trgSum + ap.MinSum << " to " << ap.trgSum + ap.MaxSum
        << ", Min. Size " << ap.MinSize << "\n";
     ss << countAssigned() << " of " << g.vertexCount()
        << " localities assigned to " << vGroup.size()
