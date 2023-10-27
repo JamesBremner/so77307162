@@ -289,7 +289,10 @@ void cGrouper::assign()
     vGroup.clear();
 
     // loop over components TID15
-    for (auto &comp : components(g))
+    std::cout << "Detecting components\n";
+    auto vComp = components(g);
+    std::cout << vComp.size() << " components detected\n";
+    for (auto &comp : vComp)
     {
         // check if component small enough to be a group
         if (comp.size() < myAlgoParams.MinSize)
@@ -328,6 +331,7 @@ void cGrouper::assign()
                 bfs(start);
         }
     }
+    std::cout << vGroup.size() << " groups assigned\n";
 }
 
 cGrouper::sAlgoParams::sAlgoParams()
