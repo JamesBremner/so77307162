@@ -66,6 +66,7 @@ void cGrouper::readfileAdjancylist(const std::string &fname)
             "Cannot open " + fname);
 
     g.clear();
+    avLocalDeficit = 0;
 
     std::string line;
     std::vector<int> vlocalincluded;
@@ -91,9 +92,13 @@ void cGrouper::readfileAdjancylist(const std::string &fname)
             }
 
             // check if locality in region to be included
-            if (isLocalIncluded(vtoken[3]))
+            if (isLocalIncluded(vtoken[3])) {
                 vlocalincluded.push_back(atoi(vtoken[0].c_str()));
+                avLocalDeficit += atof(vtoken[2].c_str());
+            }
         }
+        avLocalDeficit /= vlocalincluded.size();
+
         std::cout << "finished 1st pass through input\n";
 
         // rewind input to start
@@ -488,7 +493,8 @@ std::string cGrouper::textStats()
        << ", Min. Size " << ap.MinSize << "\n";
     ss << countAssigned() << " of " << g.vertexCount()
        << " localities assigned to " << vGroup.size()
-       << " groups.\n";
+       << " groups. Average deficit " << avLocalDeficit 
+       << ".\n";
     return ss.str();
 }
 

@@ -53,6 +53,7 @@ class cGrouper
     std::vector<std::vector<int>> vGroup; // Groups of localities
     std::string myGroupListPath;
     std::string myAssignTablePath;
+    double avLocalDeficit;
 
     void bfs(int start);
     void addSearch(const std::vector<bool> &visited);
