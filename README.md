@@ -23,12 +23,14 @@ https://stackoverflow.com/q/77307162/16582
 - Loop S over vertices
 - Run a breadth first search starting from S
    - do not visit marked vertices
-   - do not visit vertices whose value would take the sum further away from zero
+   - do not visit vertices whose value would take the sum further away from target
    - keep sum of vertex values
-   - if abs(sum) < 0.5
+   - if sum within target range
       - add list of vertices visited in current search to list of groups
       - mark vertices visited in current search
       - end current search
+- Repeat guided breadth first search, using relaced target range
+- Add unassigned vertices to adjacent group where it takes group sum the least distance from target
 ```
 
 # Application
