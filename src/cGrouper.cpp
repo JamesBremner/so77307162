@@ -38,6 +38,56 @@ std::string cGroup::text(const raven::graph::cGraph &g)
     return ss.str();
 }
 
+cAlgoParams::cAlgoParams()
+    : trgSum(0),
+      MinSum(-5),
+      MaxSum(5),
+      MinSize(5),
+      MinSum2(-25),
+      MaxSum2(25),
+      MinSize2(2),
+      f2pass(false),
+      pass(1),
+      fComp(false)
+{
+}
+
+void cAlgoParams::sanity()
+{
+    // if (fabs(trgSum) > 0.01)
+    //     throw std::runtime_error(
+    //         "Non-zero group sum target NYI");
+    if (MinSum > MaxSum)
+        throw std::runtime_error(
+            "Bad group sum range");
+    if (MinSize < 0)
+        throw std::runtime_error(
+            "Bad minumum group size");
+}
+
+void cAlgoParams::getParams(
+    double &minSum,
+    double &maxSum,
+    int &minSize) const
+{
+    switch (pass)
+    {
+    case 1:
+        minSum = MinSum;
+        maxSum = MaxSum;
+        minSize = MinSize;
+        break;
+    case 2:
+        minSum = MinSum2;
+        maxSum = MaxSum2;
+        minSize = MinSize2;
+        break;
+    default:
+        throw std::runtime_error(
+            "sAlgoParams::getParam bad pass");
+    }
+}
+
 cGrouper::cGrouper()
 {
 }
@@ -205,7 +255,7 @@ void cGrouper::bfs(
     int start)
 {
     // check start already assigned to a group
-    if (vMarked[start])
+    if (vAssigned[start])
         return;
 
     // Mark all the vertices as not visited
@@ -231,7 +281,7 @@ void cGrouper::bfs(
         for (int adj : g.adjacentOut(s))
         {
             // ignore localities assigned to previous groups
-            if (vMarked[adj])
+            if (vAssigned[adj])
                 continue;
 
             // ignore localities already visited in this search
@@ -287,7 +337,7 @@ void cGrouper::addSearch(const std::vector<bool> &visited)
         if (visited[kv])
         {
             vm.add(kv);
-            vMarked[kv] = true;
+            vAssigned[kv] = true;
         }
     vGroup.push_back(vm);
 }
@@ -310,6 +360,46 @@ bool cGrouper::isGroupAcceptable(
     return true;
 }
 
+void cGrouper::addUnassigned()
+{
+    for (int u = 0; u < g.vertexCount(); u++)
+    {
+        if (vAssigned[u])
+            continue;
+
+        double val = atof(g.rVertexAttr(u, 0).c_str());
+        double bestDelta = 10e50;
+        cGroup &bestGroup = vGroup[0];
+        for (int a : g.adjacentOut(u))
+        {
+            if (!vAssigned[a])
+                continue;
+
+            // found adjacent locality that has been assigned to a group
+
+            for (auto &grp : vGroup)
+            {
+                if (grp.isMember(a))
+                {
+                    double delta = fabs(grp.deficitSum(g) + val - myAlgoParams.trgSum);
+                    if (delta < bestDelta)
+                    {
+                        bestDelta = delta;
+                        bestGroup = grp;
+                    }
+                    break;
+                }
+            } // end loop over groups a might belong to
+        }     // end loop over adjacent locaties
+
+        // add unassigned locality to best adjacent group
+
+        bestGroup.add(u);
+        vAssigned[u] = true;
+
+    }   // end loop over unassigned localities
+}
+
 void cGrouper::sanity()
 {
     myAlgoParams.sanity();
@@ -321,8 +411,8 @@ void cGrouper::assign()
     myAlgoParams.pass = 1;
 
     // clear assigned localities
-    vMarked.clear();
-    vMarked.resize(g.vertexCount(), false);
+    vAssigned.clear();
+    vAssigned.resize(g.vertexCount(), false);
     vGroup.clear();
 
     if (myAlgoParams.fComp)
@@ -390,63 +480,15 @@ void cGrouper::assign()
                 bfs(start);
         }
     }
-    std::cout << vGroup.size() << " groups assigned\n";
-}
+    std::cout << vGroup.size() << " groups assigned using guided BFS\n";
 
-cAlgoParams::cAlgoParams()
-    : trgSum(0),
-      MinSum(-5),
-      MaxSum(5),
-      MinSize(5),
-      MinSum2(-25),
-      MaxSum2(25),
-      MinSize2(2),
-      f2pass(false),
-      pass(1),
-      fComp(false)
-{
-}
-
-void cAlgoParams::sanity()
-{
-    // if (fabs(trgSum) > 0.01)
-    //     throw std::runtime_error(
-    //         "Non-zero group sum target NYI");
-    if (MinSum > MaxSum)
-        throw std::runtime_error(
-            "Bad group sum range");
-    if (MinSize < 0)
-        throw std::runtime_error(
-            "Bad minumum group size");
-}
-
-void cAlgoParams::getParams(
-    double &minSum,
-    double &maxSum,
-    int &minSize) const
-{
-    switch (pass)
-    {
-    case 1:
-        minSum = MinSum;
-        maxSum = MaxSum;
-        minSize = MinSize;
-        break;
-    case 2:
-        minSum = MinSum2;
-        maxSum = MaxSum2;
-        minSize = MinSize2;
-        break;
-    default:
-        throw std::runtime_error(
-            "sAlgoParams::getParam bad pass");
-    }
+    addUnassigned();
 }
 
 int cGrouper::countAssigned()
 {
     return std::count(
-        vMarked.begin(), vMarked.end(),
+        vAssigned.begin(), vAssigned.end(),
         true);
 }
 
@@ -500,44 +542,71 @@ std::string cGrouper::textStats()
 {
     std::stringstream ss;
     auto ap = algoParams();
-    ss << "Sum " << ap.trgSum + ap.MinSum << " to " << ap.trgSum + ap.MaxSum
+    ss << "Average locality deficit " << avLocalDeficit << "\n"
+       << "Sum " << ap.trgSum + ap.MinSum << " to " << ap.trgSum + ap.MaxSum
        << ", Min. Size " << ap.MinSize << "\n";
     ss << countAssigned() << " of " << g.vertexCount()
        << " localities assigned to " << vGroup.size()
-       << " groups. Average deficit " << avLocalDeficit
-       << ".\n";
+       << " groups.\n ";
+
+    int minSize = vGroup[0].size();
+    int maxSize = 0;
+    double avSize = 0;
+    double minde = vGroup[0].deficitSum(g);
+    double maxde = minde;
+    double avde = 0;
+    for (auto &grp : vGroup)
+    {
+        int gs = grp.size();
+        if (gs < minSize)
+            minSize = gs;
+        if (gs > maxSize)
+            maxSize = gs;
+        avSize += gs;
+        double de = grp.deficitSum(g);
+        if (de < minde)
+            minde = de;
+        if (de > maxde)
+            maxde = de;
+        avde += de;
+    }
+    avSize /= vGroup.size();
+    avde /= vGroup.size();
+
+    ss << "Group size: min " << minSize
+       << " av " << avSize
+       << " max " << maxSize
+       << "      Group deficit:  min " << minde
+       << " av " << avde
+       << " max " << maxde
+       << "\n";
+
     return ss.str();
 }
 
 std::string cGrouper::text(int region)
 {
-    return "NYI\n";
-    // if (!vGroup.size())
-    //     return "\n\n\n     Use menu item File | Adjacency List to select input file";
 
-    // std::stringstream ss;
-    // ss << "\n"
-    //    << textStats()
-    //    << "All groups written to " << myGroupListPath
-    //    << "\nAll localities written to " << myAssignTablePath
-    //    << "\n\n";
+    if (!vGroup.size())
+        return "\n\n\n     Use menu item File | Adjacency List to select input file";
 
-    // ss << "Groups in region " << region << "\n";
+    std::stringstream ss;
+    ss << textStats()
+       << "All groups written to " << myGroupListPath
+       << "\nAll localities written to " << myAssignTablePath
+       << "\n\n";
 
-    // for (auto &vm : vGroup)
-    // {
-    //     if (vRegion[vm[0]] != region)
-    //         continue;
+    int displayGroupCount = 3;
+    if (displayGroupCount > vGroup.size())
+        displayGroupCount = vGroup.size();
+    for (int kgrp = 0; kgrp < displayGroupCount; kgrp++)
+    {
+        ss << "========================\n";
+        ss << vGroup[kgrp].text(g);
+    }
+    ss << "  ...\n";
 
-    //     double sum = 0;
-    //     for (int v : vm)
-    //     {
-    //         ss << g.userName(v) << " ";
-    //         sum += atof(g.rVertexAttr(v, 0).c_str());
-    //     }
-    //     ss << " sum: " << sum << "\n";
-    // }
-    // return ss.str();
+    return ss.str();
 }
 
 static std::string readableTimeStamp()

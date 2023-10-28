@@ -83,13 +83,14 @@ class cGrouper
     raven::graph::cGraph g;               // The links between touching localities
     std::vector<int> vRegion;             // Regions of the localities
     std::vector<int> vRegionInclude;      // Regions to be grouped, empty for all
-    std::vector<bool> vMarked;            // The localities that have been assigned to groups
+    std::vector<bool> vAssigned;          // The localities that have been assigned to groups
     std::vector<cGroup> vGroup;           // Groups of localities
     std::string myGroupListPath;
     std::string myAssignTablePath;
     double avLocalDeficit;
 
     void bfs(int start);
+    void addUnassigned();
     void addSearch(const std::vector<bool> &visited);
     bool isGroupAcceptable(
         const std::vector<bool> &visited,
