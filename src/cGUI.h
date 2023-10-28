@@ -112,6 +112,6 @@ private:
     int myRegionView;
 
     void constructMenu();
-    void promptAlgoParams();
+    void editorParams();
     void draw();
 };

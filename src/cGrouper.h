@@ -85,6 +85,7 @@ class cGrouper
     std::vector<int> vRegionInclude;      // Regions to be grouped, empty for all
     std::vector<bool> vAssigned;          // The localities that have been assigned to groups
     std::vector<cGroup> vGroup;           // Groups of localities
+    std::string myAdjacancyPath;
     std::string myGroupListPath;
     std::string myAssignTablePath;
     double avLocalDeficit;
@@ -141,6 +142,10 @@ public:
 
     // Getters
 
+    std::string adjacancyPath() const
+    {
+        return myAdjacancyPath;
+    }
     std::string regionsIncluded() const;
     cAlgoParams &algoParams();
 };

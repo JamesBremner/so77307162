@@ -9,50 +9,14 @@ void cGUI::constructMenu()
 {
     wex::menubar mbar(fm);
 
-    wex::menu file(fm);
-    file.append(
-        "Adjacency List",
-        [&](const std::string &title)
-        {
-            wex::filebox fb(fm);
-            auto fname = fb.open();
-            fm.text("Depaver " + fname);
-            grouper.readfileAdjancylist(fname);
-            grouper.assign();
-            grouper.writeGroupList();
-            grouper.writeAssignTable();
-            fm.update();
-        });
-    mbar.append("File", file);
-    file.append(
-        "Regions to group",
-        [&](const std::string &title)
-        {
-            wex::inputbox ib;
-            ib.labelWidth(200);
-            ib.gridWidth(500);
-            ib.add("Regions ( Space separated list e.g. \"84 32\")",
-                   grouper.regionsIncluded());
-            ib.showModal();
-            grouper.regionsIncluded(ib.value("Regions ( Space separated list e.g. \"84 32\")"));
-            wex::filebox fb(fm);
-            auto fname = fb.open();
-            fm.text("Grouper " + fname);
-            grouper.readfileAdjancylist(fname);
-            grouper.assign();
-            grouper.writeGroupList();
-            grouper.writeAssignTable();
-            fm.update();
-        });
-
     /////////////////// Edit //////////////
 
     wex::menu edit(fm);
     edit.append(
-        "Algorithm",
+        "Parameters",
         [this](const std::string &title)
         {
-            promptAlgoParams();
+            editorParams();
         });
     mbar.append("Edit", edit);
 
@@ -110,26 +74,29 @@ void cGUI::constructMenu()
     mbar.append("Help", help);
 }
 
-void cGUI::promptAlgoParams()
+void cGUI::editorParams()
 {
     // get current algorithm parameter values
-    auto& ap = grouper.algoParams();
+    auto &ap = grouper.algoParams();
 
     wex::inputbox ib;
-    ib.labelWidth(200);
-    ib.gridWidth(300);
-    ib.text("Edit assignment algorithm parameters");
-    ib.add("Group sum target",std::to_string(ap.trgSum));
+    ib.labelWidth(300);
+    ib.gridWidth(400);
+    ib.text("Edit Parameters");
+    ib.add("Regions ( Space separated list e.g. \"84 32\")",
+           grouper.regionsIncluded());
+    ib.add("Group sum target", std::to_string(ap.trgSum));
     ib.add("Minimum group sum delta", std::to_string(ap.MinSum));
     ib.add("Maximum group sum delta", std::to_string(ap.MaxSum));
     ib.add("Minimum group size", std::to_string(ap.MinSize));
     ib.check("2 passes", ap.f2pass);
-    //ib.add("Group sum target pass 2",std::to_string(ap.trgSum2).c_str());
     ib.add("Min group sum delta pass 2", std::to_string(ap.MinSum2));
     ib.add("Max group sum delta pass 2", std::to_string(ap.MaxSum2));
     ib.add("Minimum group size pass 2", std::to_string(ap.MinSize2));
-    ib.check("Components",ap.fComp);
+    ib.check("Components", ap.fComp);
     ib.showModal();
+    grouper.regionsIncluded(
+        ib.value("Regions ( Space separated list e.g. \"84 32\")"));
     grouper.algoParams(
         atof(ib.value("Minimum group sum delta").c_str()),
         atof(ib.value("Maximum group sum delta").c_str()),
@@ -140,7 +107,6 @@ void cGUI::promptAlgoParams()
         atof(ib.value("Max group sum delta pass 2").c_str()),
         atoi(ib.value("Minimum group size pass 2").c_str()));
     ap.trgSum = atof(ib.value("Group sum target").c_str());
-    //ap.trgSum2 = atof(ib.value("Group sum target pass 2").c_str());
     ap.fComp = ib.isChecked("Components");
 
     try
@@ -152,6 +118,15 @@ void cGUI::promptAlgoParams()
         wex::msgbox(
             std::string("Exception: ") + e.what());
         return;
+    }
+
+    auto apath = grouper.adjacancyPath();
+    if (apath.empty())
+    {
+        wex::filebox fb(fm);
+        auto fname = fb.open();
+        fm.text("Depaver " + fname);
+        grouper.readfileAdjancylist(fname);
     }
 
     grouper.assign();

@@ -89,6 +89,7 @@ void cAlgoParams::getParams(
 }
 
 cGrouper::cGrouper()
+: myAdjacancyPath("")
 {
 }
 
@@ -143,6 +144,7 @@ void cGrouper::readfileAdjancylist(const std::string &fname)
     if (!ifs.is_open())
         throw std::runtime_error(
             "Cannot open " + fname);
+    myAdjacancyPath = fname;
 
     g.clear();
     avLocalDeficit = 0;
@@ -397,7 +399,7 @@ void cGrouper::addUnassigned()
         bestGroup.add(u);
         vAssigned[u] = true;
 
-    }   // end loop over unassigned localities
+    } // end loop over unassigned localities
 }
 
 void cGrouper::sanity()
@@ -548,6 +550,9 @@ std::string cGrouper::textStats()
     ss << countAssigned() << " of " << g.vertexCount()
        << " localities assigned to " << vGroup.size()
        << " groups.\n ";
+
+    if (!vGroup.size())
+        return ss.str();
 
     int minSize = vGroup[0].size();
     int maxSize = 0;
