@@ -6,15 +6,50 @@
 
 #include "GraphTheory.h" // https://github.com/JamesBremner/PathFinder
 
+/// @brief A group of localities sharing their land takes
+class cGroup
+{
+    std::vector<int> myMembers;
+    double myDeficitSum;
+    bool fSumValid;
+
+public:
+    cGroup()
+        : fSumValid(false)
+    {
+    }
+    void add(int loc)
+    {
+        fSumValid = false;
+        myMembers.push_back(loc);
+    }
+    double deficitSum(const raven::graph::cGraph &g);
+
+    bool isMember( int loc ) const;
+
+    std::string text(const raven::graph::cGraph &g);
+
+    int size() const
+    {
+        return myMembers.size();
+    }
+    std::vector<int>::iterator begin()
+    {
+        return myMembers.begin();
+    }
+    std::vector<int>::iterator end()
+    {
+        return myMembers.end();
+    }
+};
+
 class cAlgoParams
 {
-    public:
-
+public:
     double trgSum;
     double MinSum;
     double MaxSum;
     int MinSize;
-    double trgSum2;
     double MinSum2;
     double MaxSum2;
     int MinSize2;
@@ -23,7 +58,6 @@ class cAlgoParams
     int pass;    // current pass
 
     bool fComp; // true if components reuired
-
 
     cAlgoParams();
 
@@ -50,7 +84,7 @@ class cGrouper
     std::vector<int> vRegion;             // Regions of the localities
     std::vector<int> vRegionInclude;      // Regions to be grouped, empty for all
     std::vector<bool> vMarked;            // The localities that have been assigned to groups
-    std::vector<std::vector<int>> vGroup; // Groups of localities
+    std::vector<cGroup> vGroup;           // Groups of localities
     std::string myGroupListPath;
     std::string myAssignTablePath;
     double avLocalDeficit;
@@ -107,5 +141,5 @@ public:
     // Getters
 
     std::string regionsIncluded() const;
-    cAlgoParams& algoParams();
+    cAlgoParams &algoParams();
 };

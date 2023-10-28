@@ -9,6 +9,35 @@
 
 #include "cGrouper.h"
 
+double cGroup::deficitSum(const raven::graph::cGraph &g)
+{
+    if (!fSumValid)
+    {
+        myDeficitSum = 0;
+        for (int loc : myMembers)
+            myDeficitSum += atof(g.rVertexAttr(loc, 0).c_str());
+    }
+
+    return myDeficitSum;
+}
+
+bool cGroup::isMember(int loc) const
+{
+    return (std::find(myMembers.begin(), myMembers.end(), loc) != myMembers.end());
+}
+
+std::string cGroup::text(const raven::graph::cGraph &g)
+{
+    std::stringstream ss;
+    for (int v : myMembers)
+    {
+        ss << g.userName(v)
+           << " " << g.rVertexAttr(v, 0) << " ";
+    }
+    ss << "sum " << deficitSum(g) << "\n";
+    return ss.str();
+}
+
 cGrouper::cGrouper()
 {
 }
@@ -92,7 +121,8 @@ void cGrouper::readfileAdjancylist(const std::string &fname)
             }
 
             // check if locality in region to be included
-            if (isLocalIncluded(vtoken[3])) {
+            if (isLocalIncluded(vtoken[3]))
+            {
                 vlocalincluded.push_back(atoi(vtoken[0].c_str()));
                 avLocalDeficit += atof(vtoken[2].c_str());
             }
@@ -212,7 +242,7 @@ void cGrouper::bfs(
             double val = atof(g.rVertexAttr(adj, 0).c_str());
 
             // ignore localities that take sum further away from target
-            if (fabs(sum + val - myAlgoParams.trgSum) > 
+            if (fabs(sum + val - myAlgoParams.trgSum) >
                 fabs(sum - myAlgoParams.trgSum))
                 continue;
 
@@ -252,11 +282,11 @@ void cGrouper::bfs(
 
 void cGrouper::addSearch(const std::vector<bool> &visited)
 {
-    std::vector<int> vm;
+    cGroup vm;
     for (int kv = 0; kv < g.vertexCount(); kv++)
         if (visited[kv])
         {
-            vm.push_back(kv);
+            vm.add(kv);
             vMarked[kv] = true;
         }
     vGroup.push_back(vm);
@@ -368,7 +398,6 @@ cAlgoParams::cAlgoParams()
       MinSum(-5),
       MaxSum(5),
       MinSize(5),
-      trgSum2(0),
       MinSum2(-25),
       MaxSum2(25),
       MinSize2(2),
@@ -383,7 +412,7 @@ void cAlgoParams::sanity()
     // if (fabs(trgSum) > 0.01)
     //     throw std::runtime_error(
     //         "Non-zero group sum target NYI");
-    if( MinSum > MaxSum)
+    if (MinSum > MaxSum)
         throw std::runtime_error(
             "Bad group sum range");
     if (MinSize < 0)
@@ -423,28 +452,10 @@ int cGrouper::countAssigned()
 
 void cGrouper::display()
 {
-
-    // for (int v = 0; v < g.vertexCount(); v++)
-    // {
-    //     std::cout << g.userName(v) << " " << g.rVertexAttr(v, 0) << "\n";
-    // }
-    // for (auto &l : g.edgeList())
-    // {
-    //     std::cout << g.userName(l.first)
-    //               << " " << g.userName(l.second)
-    //               << "\n";
-    // }
-    for (auto &vm : vGroup)
+    for (auto &grp : vGroup)
     {
         std::cout << "============\n";
-        double sum = 0;
-        for (int v : vm)
-        {
-            std::cout << g.userName(v)
-                      << " " << g.rVertexAttr(v, 0) << " ";
-            sum += atof(g.rVertexAttr(v, 0).c_str());
-        }
-        std::cout << "sum " << sum << "\n";
+        std::cout << grp.text(g) << "\n";
     }
 
     layout();
@@ -472,7 +483,7 @@ void cGrouper::layout()
         {
             for (int k = 0; k < vGroup.size(); k++)
             {
-                if (std::find(vGroup[k].begin(), vGroup[k].end(), v) != vGroup[k].end())
+                if (vGroup[k].isMember(v))
                 {
                     if (k < vColor.size())
                         return std::string(", color = ") + vColor[k];
@@ -493,39 +504,40 @@ std::string cGrouper::textStats()
        << ", Min. Size " << ap.MinSize << "\n";
     ss << countAssigned() << " of " << g.vertexCount()
        << " localities assigned to " << vGroup.size()
-       << " groups. Average deficit " << avLocalDeficit 
+       << " groups. Average deficit " << avLocalDeficit
        << ".\n";
     return ss.str();
 }
 
 std::string cGrouper::text(int region)
 {
-    if (!vGroup.size())
-        return "\n\n\n     Use menu item File | Adjacency List to select input file";
+    return "NYI\n";
+    // if (!vGroup.size())
+    //     return "\n\n\n     Use menu item File | Adjacency List to select input file";
 
-    std::stringstream ss;
-    ss << "\n"
-       << textStats()
-       << "All groups written to " << myGroupListPath
-       << "\nAll localities written to " << myAssignTablePath
-       << "\n\n";
+    // std::stringstream ss;
+    // ss << "\n"
+    //    << textStats()
+    //    << "All groups written to " << myGroupListPath
+    //    << "\nAll localities written to " << myAssignTablePath
+    //    << "\n\n";
 
-    ss << "Groups in region " << region << "\n";
+    // ss << "Groups in region " << region << "\n";
 
-    for (auto &vm : vGroup)
-    {
-        if (vRegion[vm[0]] != region)
-            continue;
+    // for (auto &vm : vGroup)
+    // {
+    //     if (vRegion[vm[0]] != region)
+    //         continue;
 
-        double sum = 0;
-        for (int v : vm)
-        {
-            ss << g.userName(v) << " ";
-            sum += atof(g.rVertexAttr(v, 0).c_str());
-        }
-        ss << " sum: " << sum << "\n";
-    }
-    return ss.str();
+    //     double sum = 0;
+    //     for (int v : vm)
+    //     {
+    //         ss << g.userName(v) << " ";
+    //         sum += atof(g.rVertexAttr(v, 0).c_str());
+    //     }
+    //     ss << " sum: " << sum << "\n";
+    // }
+    // return ss.str();
 }
 
 static std::string readableTimeStamp()
@@ -557,17 +569,10 @@ void cGrouper::writeGroupList()
     }
 
     ofs << textStats() << "\n";
-    for (auto &vm : vGroup)
+    for (auto &grp : vGroup)
     {
         ofs << "============\n";
-        double sum = 0;
-        for (int v : vm)
-        {
-            ofs << g.userName(v)
-                << " " << g.rVertexAttr(v, 0) << " ";
-            sum += atof(g.rVertexAttr(v, 0).c_str());
-        }
-        ofs << "sum " << sum << "\n";
+        ofs << grp.text(g) << "\n";
     }
 }
 
@@ -586,11 +591,6 @@ void cGrouper::writeAssignTable()
     int groupID = 0;
     for (auto &grp : vGroup)
     {
-        double sum = 0;
-        for (int loc : grp)
-            sum += atof(g.rVertexAttr(loc, 0).c_str());
-        auto ssum = std::to_string(sum);
-
         for (int loc : grp)
         {
             std::vector<std::string> row;
@@ -598,9 +598,10 @@ void cGrouper::writeAssignTable()
             row.push_back(g.rVertexAttr(loc, 0));
             row.push_back(std::to_string(groupID));
             row.push_back(std::to_string(grp.size()));
-            row.push_back(ssum);
+            row.push_back(std::to_string(grp.deficitSum(g)));
             table.push_back(row);
         }
+
         groupID++;
     }
     std::sort(
