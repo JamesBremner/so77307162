@@ -53,6 +53,7 @@ public:
     double MinSum2;
     double MaxSum2;
     int MinSize2;
+    std::vector<int> vRegionInclude;      // Regions to be grouped, empty for all
 
     bool f2pass; // true if 2 passes required
     int pass;    // current pass
@@ -60,6 +61,8 @@ public:
     bool fComp; // true if components reuired
 
     cAlgoParams();
+
+    bool regionsIncluded( const std::string& s);
 
     /// @brief Check sanity of algorithm parameters, throw exception if fails
 
@@ -74,6 +77,15 @@ public:
         double &minSum,
         double &maxSum,
         int &minSize) const;
+
+    std::string regionsIncluded() const;
+
+    bool isEveryRegionIncluded() const
+    {
+        return ( ! vRegionInclude.size() );
+    }
+
+    bool isRegionIncluded( int reg ) const;
 };
 
 /// @brief Assign localities ( municipalities ) to groups
@@ -82,7 +94,6 @@ class cGrouper
     cAlgoParams myAlgoParams;             // Algorithm paramters
     raven::graph::cGraph g;               // The links between touching localities
     std::vector<int> vRegion;             // Regions of the localities
-    std::vector<int> vRegionInclude;      // Regions to be grouped, empty for all
     std::vector<bool> vAssigned;          // The localities that have been assigned to groups
     std::vector<cGroup> vGroup;           // Groups of localities
     std::string myAdjacancyPath;
@@ -123,12 +134,18 @@ public:
 
     // Setters
 
-    void regionsIncluded(const std::string &s);
+    void adjacancyPath(const std::string &path )
+    {
+        myAdjacancyPath = path;
+    }
+
+    bool regionsIncluded(const std::string &s);
 
     /// @brief algorithm parameters for 1st pass
     /// @param minSum
     /// @param maxSum
     /// @param minSize
+
     void algoParams(double minSum, double maxSum, int minSize);
 
     /// @brief algorithm parameters for 2nd pass
@@ -136,6 +153,7 @@ public:
     /// @param minSum
     /// @param maxSum
     /// @param minSize
+
     void passes(
         bool f,
         double minSum, double maxSum, int minSize);

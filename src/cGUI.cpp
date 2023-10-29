@@ -95,7 +95,7 @@ void cGUI::editorParams()
     ib.add("Minimum group size pass 2", std::to_string(ap.MinSize2));
     ib.check("Components", ap.fComp);
     ib.showModal();
-    grouper.regionsIncluded(
+    bool newRegions = grouper.regionsIncluded(
         ib.value("Regions ( Space separated list e.g. \"84 32\")"));
     grouper.algoParams(
         atof(ib.value("Minimum group sum delta").c_str()),
@@ -120,15 +120,19 @@ void cGUI::editorParams()
         return;
     }
 
-    auto apath = grouper.adjacancyPath();
-    if (apath.empty())
+
+    if (grouper.adjacancyPath().empty())
     {
         wex::filebox fb(fm);
         auto fname = fb.open();
         fm.text("Depaver " + fname);
-        grouper.readfileAdjancylist(fname);
+        grouper.adjacancyPath( fname );
+        newRegions = true;
+        fm.update();
     }
-
+    if( newRegions )
+        grouper.readfileAdjancylist(grouper.adjacancyPath());
+        
     grouper.assign();
     grouper.writeGroupList();
     grouper.writeAssignTable();

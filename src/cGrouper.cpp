@@ -52,11 +52,21 @@ cAlgoParams::cAlgoParams()
 {
 }
 
+bool cAlgoParams::regionsIncluded( const std::string& s)
+{
+    if( s == regionsIncluded() )
+        return false;
+    vRegionInclude.clear();
+    std::stringstream sst(s);
+    std::string a;
+    while (getline(sst, a, ' '))
+        vRegionInclude.push_back(atoi(a.c_str()));
+    return true;
+}
+
 void cAlgoParams::sanity()
 {
-    // if (fabs(trgSum) > 0.01)
-    //     throw std::runtime_error(
-    //         "Non-zero group sum target NYI");
+
     if (MinSum > MaxSum)
         throw std::runtime_error(
             "Bad group sum range");
@@ -88,18 +98,32 @@ void cAlgoParams::getParams(
     }
 }
 
-cGrouper::cGrouper()
-: myAdjacancyPath("")
-{
-}
-
-std::string cGrouper::regionsIncluded() const
+std::string cAlgoParams::regionsIncluded() const
 {
     std::stringstream ss;
     for (int r : vRegionInclude)
         ss << r << " ";
     return ss.str();
 }
+
+bool cAlgoParams::isRegionIncluded(int reg) const
+{
+    if( ! vRegionInclude.size())
+        return true;
+    return (std::find(
+                vRegionInclude.begin(), vRegionInclude.end(), reg) != vRegionInclude.end());
+}
+
+cGrouper::cGrouper()
+    : myAdjacancyPath("")
+{
+}
+
+std::string cGrouper::regionsIncluded() const
+{
+    return myAlgoParams.regionsIncluded();
+}
+
 cAlgoParams &cGrouper::algoParams()
 {
     return myAlgoParams;
@@ -124,15 +148,9 @@ void cGrouper::passes(
     }
 }
 
-bool cGrouper::isLocalIncluded(const ::std::string &slocRegion)
+bool cGrouper::isLocalIncluded(const std::string &slocRegion)
 {
-    // check if all regions included
-    if (!vRegionInclude.size())
-        return true;
-
-    return (std::find(
-                vRegionInclude.begin(), vRegionInclude.end(),
-                atoi(slocRegion.c_str())) != vRegionInclude.end());
+    return myAlgoParams.isRegionIncluded(atoi(slocRegion.c_str()));
 }
 
 void cGrouper::readfileAdjancylist(const std::string &fname)
@@ -153,7 +171,7 @@ void cGrouper::readfileAdjancylist(const std::string &fname)
     std::vector<int> vlocalincluded;
 
     // identify localities in the included regions TID11
-    if (vRegionInclude.size())
+    if ( ! myAlgoParams.isEveryRegionIncluded())
     {
         getline(ifs, line);
         while (getline(ifs, line))
@@ -213,7 +231,7 @@ void cGrouper::readfileAdjancylist(const std::string &fname)
         // std::cout << vtoken[2] << "\n================\n";
 
         // check if locality in region to be included
-        if (!isLocalIncluded(vtoken[3]))
+        if (! myAlgoParams.isRegionIncluded(atoi(vtoken[3].c_str())))
             continue;
 
         int vi = g.find(vtoken[0]);
@@ -233,7 +251,7 @@ void cGrouper::readfileAdjancylist(const std::string &fname)
         while (getline(ssta, a, ' '))
         {
             // check if the adjacent locality is in the included regions TID11
-            if (vRegionInclude.size())
+            if (! myAlgoParams.isEveryRegionIncluded())
             {
                 if (std::find(
                         vlocalincluded.begin(), vlocalincluded.end(),
@@ -593,7 +611,7 @@ std::string cGrouper::text(int region)
 {
 
     if (!vGroup.size())
-        return "\n\n\n     Use menu item File | Adjacency List to select input file";
+        return "\n\n\n     Use menu item Edit | Parameters to configure and start a calculation";
 
     std::stringstream ss;
     ss << textStats()
@@ -650,13 +668,9 @@ void cGrouper::writeGroupList()
     }
 }
 
-void cGrouper::regionsIncluded(const std::string &s)
+bool cGrouper::regionsIncluded(const std::string &s)
 {
-    vRegionInclude.clear();
-    std::stringstream sst(s);
-    std::string a;
-    while (getline(sst, a, ' '))
-        vRegionInclude.push_back(atoi(a.c_str()));
+    return myAlgoParams.regionsIncluded( s );
 }
 
 void cGrouper::writeAssignTable()
